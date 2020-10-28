@@ -73,25 +73,47 @@ def redraw_insert_name(win, font, player_name, buttons):
     pygame.display.update()
 
 
-def redraw_tables(win, font, buttons):
+def redraw_user_exist(win, font):
     win.fill((40, 125, 67))
-    tables_text = font.render("Dostępne stoły", 1, (0, 0, 0))
-    win.blit(tables_text, (400, 400))
+    user_exist_text = font.render("Użytkownik o podanej nazwie istnieje już", 1, (0, 0, 0))
+    win.blit(user_exist_text, (round(win.get_width() / 2 - user_exist_text.get_width() / 2),
+                               round(win.get_height() / 2 - user_exist_text.get_height() / 2)))
+    pygame.display.update()
+
+
+def redraw_tables(win, font, font2, buttons, empty_tables):
+    win.fill((40, 125, 67))
+    tables_text = font2.render("Dostępne stoły", 1, (0, 0, 0))
+    max_tables_text = font.render("Maksymalna liczba oczekujących stołów: 3", 1, (0, 0, 0))
+    win.blit(tables_text, (round(win.get_width() / 2 - tables_text.get_width() / 2), 50))
+    win.blit(max_tables_text, (120, 700))
+    for btn in buttons:
+        btn.draw(win)
+    for i, _ in enumerate(empty_tables):
+        pygame.draw.rect(win, (7, 32, 110), (80, 200 * (i + 1), 400, 200))
+    pygame.display.update()
+
+
+def redraw_sitting(win):
+    win.fill((40, 125, 67))
     pygame.display.update()
 
 
 # Buttons
 confirm_name_btn = Button(200, 80, (7, 32, 110), "POTWIERDŹ", 400, 500)
+create_table_btn = Button(200, 80, (7, 32, 110), "ZAŁÓŻ STÓŁ", 750, 680)
+
 
 def mainLoop():
     # Initial values
     run = True
-    status_game = "insert_name"
+    status_game = "insert name"
     player_name = InputString()
     font = pygame.font.SysFont("Arial", 32)
+    font2 = pygame.font.SysFont("Arial", 64)
     while run:
 
-        if status_game == "insert_name":
+        if status_game == "insert name":
             buttons = [confirm_name_btn]
             redraw_insert_name(screen, font, player_name, buttons)
             for event in pygame.event.get():
@@ -102,7 +124,8 @@ def mainLoop():
                     if event.key == 13 or event.key == 271:
                         if player_name.get_string():
                             status_game = "tables"
-                            buttons = []
+                            buttons = [create_table_btn]
+                            p = Player(player_name.string)
                     elif event.key == 8:
                         player_name.remove_letter()
                     elif event.unicode:
@@ -110,14 +133,44 @@ def mainLoop():
                 if event.type == pygame.MOUSEBUTTONUP:
                     if confirm_name_btn.on_button() and player_name.get_string():
                         status_game = "tables"
-                        buttons = []
+                        buttons = [create_table_btn]
+                        p = Player(player_name.string)
 
-        elif status_game == "tables":
-            redraw_tables(screen, font, buttons)
+        elif status_game == "user exist":
+            redraw_user_exist(screen, font2)
+            pygame.time.delay(2000)
+            status_game = "insert name"
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
                     pygame.quit()
+
+        elif status_game == "tables":
+            response = p.send({"command": "waiting in lobby",
+                               "user": p.username})
+            if response.get("response") != "ok":
+                if response.get("response") == "user exist":
+                    status_game = "user exist"
+            empty_tables = response.get("empty_tables")
+            redraw_tables(screen, font, font2, buttons, empty_tables)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    pygame.quit()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if create_table_btn.on_button() and len(empty_tables) <= 3:
+                        response = p.send({"command": "create table",
+                                           "user": p.username})
+                        status_game = "sitting"
+                        table = response.get("table")
+
+        elif status_game == "sitting":
+            redraw_sitting(screen)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    pygame.quit()
+
 
 
 mainLoop()

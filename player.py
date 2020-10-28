@@ -11,10 +11,11 @@ HEADER_SIZE = 30
 BUFSIZE = 1024
 
 
-class Network:
-    def __init__(self):
+class Player:
+    def __init__(self, username):
         self.socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.welcome = self.connect()
+        self.username = username
         print(self.welcome)
 
     def connect(self):
@@ -54,10 +55,3 @@ class Network:
             return None
 
         return pickle.loads(received)
-
-
-n = Network()
-while True:
-    msg = n.send("Hello from client")
-    print(msg)
-    time.sleep(10)

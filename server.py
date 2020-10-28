@@ -1,6 +1,7 @@
 import socket
 import pickle
 from _thread import start_new_thread
+from table import Table
 
 # Global constants
 SERVER_IP = socket.gethostbyname(socket.gethostname())
@@ -11,6 +12,10 @@ BUFSIZE = 1024
 
 # Global variables
 countingPlayer = 0
+users = {}
+tables = []
+empty_tables = []
+tableID = 1
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(SERVER_ADDR)
@@ -20,7 +25,7 @@ print("[STARTED]: Server is running, waiting for connections")
 
 def handle_connection(conn, addr):
     run = True
-    global countingPlayer
+    global countingPlayer, empty_tables, tableID
     conn.send(bytes(f"{addr} connected to the server.", "utf-8"))
     while run:
         try:
@@ -43,11 +48,32 @@ def handle_connection(conn, addr):
                 break
 
             received_obj = pickle.loads(received)
-            print(received_obj)
 
-            sending_message = pickle.dumps(f"{addr} connected to the server.")
-            sending_header = f"{len(sending_message):<{HEADER_SIZE}}"
-            sending_data = bytes(sending_header, "utf-8") + sending_message
+            if received_obj.get("command") == "waiting in lobby":
+                if received_obj.get("user") in users and users.get(received_obj.get("user")) != addr:
+                    sending_bytes = pickle.dumps({"response": "user exist"})
+                elif received_obj.get("user") not in users:
+                    users[received_obj.get("user")] = addr
+                    sending_bytes = pickle.dumps({"response": "ok",
+                                                  "empty_tables": empty_tables,
+                                                  "count_players": countingPlayer})
+                else:
+                    sending_bytes = pickle.dumps({"response": "ok",
+                                                  "empty_tables": empty_tables,
+                                                  "count_players": countingPlayer})
+            elif received_obj.get("command") == "create table":
+                t = Table(tableID)
+                t.set_player(0, received_obj.get("user"), addr)
+                t.set_connected(0)
+                print(t.players)
+                empty_tables.append(t)
+                tableID += 1
+                sending_bytes = pickle.dumps({"response": "ok",
+                                              "empty_tables": empty_tables,
+                                              "count_players": countingPlayer,
+                                              "table": t})
+            sending_header = f"{len(sending_bytes):<{HEADER_SIZE}}"
+            sending_data = bytes(sending_header, "utf-8") + sending_bytes
             conn.send(sending_data)
 
         except Exception as e:
@@ -57,10 +83,14 @@ def handle_connection(conn, addr):
     print(f"[DISCONNECTION]: {addr} has been disconnected")
     countingPlayer -= 1
     conn.close()
+    for k, v in users.items():
+        if v == addr:
+            to_delete = k
+    del users[to_delete]
 
 
 while True:
     conn, addr = server_socket.accept()
-    print("[CONNECTED]: The connection has been established from {}, {}".format(addr[0], addr[1]))
+    print(f"[CONNECTED]: The connection has been established from {addr[0]}, {addr[1]}")
     countingPlayer += 1
     start_new_thread(handle_connection, (conn, addr))
