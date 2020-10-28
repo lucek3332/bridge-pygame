@@ -65,7 +65,6 @@ def handle_connection(conn, addr):
                 t = Table(tableID)
                 t.set_player(0, received_obj.get("user"), addr)
                 t.set_connected(0)
-                print(t.players)
                 empty_tables.append(t)
                 tableID += 1
                 sending_bytes = pickle.dumps({"response": "ok",
@@ -83,10 +82,16 @@ def handle_connection(conn, addr):
     print(f"[DISCONNECTION]: {addr} has been disconnected")
     countingPlayer -= 1
     conn.close()
+
     for k, v in users.items():
         if v == addr:
-            to_delete = k
-    del users[to_delete]
+            user_to_delete = k
+    del users[user_to_delete]
+
+    for t in empty_tables:
+        if sum(1 if p else 0 for p in t.players) == 1:
+            if (user_to_delete, addr) in t.players:
+                empty_tables.remove(t)
 
 
 while True:

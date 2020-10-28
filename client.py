@@ -81,16 +81,38 @@ def redraw_user_exist(win, font):
     pygame.display.update()
 
 
-def redraw_tables(win, font, font2, buttons, empty_tables):
+def redraw_tables(win, font, font2, buttons, empty_tables, online_players):
     win.fill((40, 125, 67))
     tables_text = font2.render("Dostępne stoły", 1, (0, 0, 0))
     max_tables_text = font.render("Maksymalna liczba oczekujących stołów: 3", 1, (0, 0, 0))
-    win.blit(tables_text, (round(win.get_width() / 2 - tables_text.get_width() / 2), 50))
-    win.blit(max_tables_text, (120, 700))
+    online_players_text = font.render(f"Graczy online {online_players}", 1, (0, 0, 0))
+    win.blit(tables_text, (round(win.get_width() / 2 - tables_text.get_width() / 2), 20))
+    win.blit(max_tables_text, (120, 720))
+    win.blit(online_players_text, (760, 150))
+
     for btn in buttons:
         btn.draw(win)
-    for i, _ in enumerate(empty_tables):
-        pygame.draw.rect(win, (7, 32, 110), (80, 200 * (i + 1), 400, 200))
+    if empty_tables:
+        for i, table in enumerate(empty_tables):
+            pygame.draw.rect(win, (100, 131, 227), (80, 120 + 200 * i, 500, 180))
+            for j, p in enumerate(table.players):
+                if p:
+                    user_text = font.render(p[0], 1, (255, 255, 255))
+                else:
+                    user_text = font.render("Usiądź", 1, (255, 255, 255))
+                if j == 0:
+                    x = 80 + round(250 - user_text.get_width() / 2)
+                    y = round(120 + 200 * i + 135 - user_text.get_height() / 2)
+                elif j == 1:
+                    x = 80 + round(125 - user_text.get_width() / 2)
+                    y = round(120 + 200 * i + 90 - user_text.get_height() / 2)
+                elif j == 2:
+                    x = 80 + round(250 - user_text.get_width() / 2)
+                    y = round(120 + 200 * i + 45 - user_text.get_height() / 2)
+                else:
+                    x = 80 + round(375 - user_text.get_width() / 2)
+                    y = round(120 + 200 * i + 90 - user_text.get_height() / 2)
+                win.blit(user_text, (x, y))
     pygame.display.update()
 
 
@@ -152,13 +174,14 @@ def mainLoop():
                 if response.get("response") == "user exist":
                     status_game = "user exist"
             empty_tables = response.get("empty_tables")
-            redraw_tables(screen, font, font2, buttons, empty_tables)
+            currentPlayers = response.get("count_players")
+            redraw_tables(screen, font, font2, buttons, empty_tables, currentPlayers)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
                     pygame.quit()
                 if event.type == pygame.MOUSEBUTTONUP:
-                    if create_table_btn.on_button() and len(empty_tables) <= 3:
+                    if create_table_btn.on_button() and len(empty_tables) < 3:
                         response = p.send({"command": "create table",
                                            "user": p.username})
                         status_game = "sitting"
@@ -170,7 +193,6 @@ def mainLoop():
                 if event.type == pygame.QUIT:
                     run = False
                     pygame.quit()
-
 
 
 mainLoop()
