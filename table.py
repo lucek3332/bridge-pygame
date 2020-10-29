@@ -5,9 +5,11 @@ class Table:
         self.connected = [False, False, False, False]  # the same order as self.players
         self.board = None
         self.nr_boards = 0
+        self.empty = True
 
-    def is_ready(self):
+    def is_full(self):
         if all(p for p in self.connected):
+            self.empty = False
             return True
         return False
 

@@ -13,8 +13,8 @@ BUFSIZE = 1024
 # Global variables
 countingPlayer = 0
 users = {}
-tables = []
-empty_tables = []
+tables = {}
+empty_tables = {}
 tableID = 1
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,9 +51,12 @@ def handle_connection(conn, addr):
 
             if received_obj.get("command") == "waiting in lobby":
                 if received_obj.get("user") in users and users.get(received_obj.get("user")) != addr:
-                    sending_bytes = pickle.dumps({"response": "user exist"})
+                    sending_bytes = pickle.dumps({"response": "user exist",
+                                                  "empty_tables": empty_tables,
+                                                  "count_players": countingPlayer})
                 elif received_obj.get("user") not in users:
                     users[received_obj.get("user")] = addr
+                    print(f"[USER ONLINE] The user {received_obj.get('user')} is currently online.")
                     sending_bytes = pickle.dumps({"response": "ok",
                                                   "empty_tables": empty_tables,
                                                   "count_players": countingPlayer})
@@ -65,8 +68,22 @@ def handle_connection(conn, addr):
                 t = Table(tableID)
                 t.set_player(0, received_obj.get("user"), addr)
                 t.set_connected(0)
-                empty_tables.append(t)
+                empty_tables[tableID] = t
+                print(f"[CREATE TABLE] The table nr {tableID} has been created.")
                 tableID += 1
+                sending_bytes = pickle.dumps({"response": "ok",
+                                              "empty_tables": empty_tables,
+                                              "count_players": countingPlayer,
+                                              "table": t})
+            elif received_obj.get('command') == "take seat":
+                t = empty_tables.get(received_obj.get('table nr'))
+                seat = received_obj.get("seat")
+                t.set_player(seat, received_obj.get("user"), addr)
+                t.set_connected(seat)
+                if t.is_full():
+                    tables[t.id] = t
+                    del empty_tables[t.id]
+
                 sending_bytes = pickle.dumps({"response": "ok",
                                               "empty_tables": empty_tables,
                                               "count_players": countingPlayer,
@@ -83,15 +100,22 @@ def handle_connection(conn, addr):
     countingPlayer -= 1
     conn.close()
 
+    user_to_delete = None
     for k, v in users.items():
         if v == addr:
             user_to_delete = k
-    del users[user_to_delete]
+    if user_to_delete:
+        del users[user_to_delete]
+        print(f"[USER OFFLINE] The user {user_to_delete} is currently offline.")
 
-    for t in empty_tables:
+    table_to_delete = None
+    for t_id, t in empty_tables.items():
         if sum(1 if p else 0 for p in t.players) == 1:
             if (user_to_delete, addr) in t.players:
-                empty_tables.remove(t)
+                table_to_delete = t.id
+    if table_to_delete:
+        del empty_tables[table_to_delete]
+        print(f"[DELETE TABLE] The table nr {table_to_delete} has been deleted.")
 
 
 while True:

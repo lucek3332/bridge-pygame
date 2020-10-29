@@ -39,6 +39,13 @@ class Button:
         return False
 
 
+class SeatingButton(Button):
+    def __init__(self, width, height, color, string, x, y, table, seat):
+        super().__init__(width, height, color, string, x, y)
+        self.table = table
+        self.seat = seat
+
+
 class InputString:
 
     def __init__(self):
@@ -81,39 +88,45 @@ def redraw_user_exist(win, font):
     pygame.display.update()
 
 
-def redraw_tables(win, font, font2, buttons, empty_tables, online_players):
+def redraw_tables(win, font, font2, buttons, online_players):
     win.fill((40, 125, 67))
     tables_text = font2.render("Dostępne stoły", 1, (0, 0, 0))
     max_tables_text = font.render("Maksymalna liczba oczekujących stołów: 3", 1, (0, 0, 0))
     online_players_text = font.render(f"Graczy online {online_players}", 1, (0, 0, 0))
     win.blit(tables_text, (round(win.get_width() / 2 - tables_text.get_width() / 2), 20))
-    win.blit(max_tables_text, (120, 720))
+    win.blit(max_tables_text, (120, 730))
     win.blit(online_players_text, (760, 150))
-
     for btn in buttons:
         btn.draw(win)
+
+
+def draw_seats(win, empty_tables):
+    seating_buttons = []
     if empty_tables:
         for i, table in enumerate(empty_tables):
             pygame.draw.rect(win, (100, 131, 227), (80, 120 + 200 * i, 500, 180))
             for j, p in enumerate(table.players):
                 if p:
-                    user_text = font.render(p[0], 1, (255, 255, 255))
+                    user_text = p[0]
                 else:
-                    user_text = font.render("Usiądź", 1, (255, 255, 255))
+                    user_text = "Usiądź"
                 if j == 0:
-                    x = 80 + round(250 - user_text.get_width() / 2)
-                    y = round(120 + 200 * i + 135 - user_text.get_height() / 2)
+                    x = 80 + 250 - 60
+                    y = 120 + 200 * i + 135 - 30
                 elif j == 1:
-                    x = 80 + round(125 - user_text.get_width() / 2)
-                    y = round(120 + 200 * i + 90 - user_text.get_height() / 2)
+                    x = 40 + 125 - 60
+                    y = 120 + 200 * i + 90 - 30
                 elif j == 2:
-                    x = 80 + round(250 - user_text.get_width() / 2)
-                    y = round(120 + 200 * i + 45 - user_text.get_height() / 2)
+                    x = 80 + 250 - 60
+                    y = 120 + 200 * i + 45 - 30
                 else:
-                    x = 80 + round(375 - user_text.get_width() / 2)
-                    y = round(120 + 200 * i + 90 - user_text.get_height() / 2)
-                win.blit(user_text, (x, y))
-    pygame.display.update()
+                    x = 120 + 375 - 60
+                    y = 120 + 200 * i + 90 - 30
+
+                seating_buttons.append(SeatingButton(120, 60, (7, 32, 110), user_text, x, y, table, j))
+    for btn in seating_buttons:
+        btn.draw(win)
+    return seating_buttons
 
 
 def redraw_sitting(win):
@@ -173,9 +186,11 @@ def mainLoop():
             if response.get("response") != "ok":
                 if response.get("response") == "user exist":
                     status_game = "user exist"
-            empty_tables = response.get("empty_tables")
+            empty_tables = response.get("empty_tables").values()
             currentPlayers = response.get("count_players")
-            redraw_tables(screen, font, font2, buttons, empty_tables, currentPlayers)
+            redraw_tables(screen, font, font2, buttons, currentPlayers)
+            seating_buttons = draw_seats(screen, empty_tables)
+            pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -186,6 +201,14 @@ def mainLoop():
                                            "user": p.username})
                         status_game = "sitting"
                         table = response.get("table")
+                    for seat in seating_buttons:
+                        if seat.on_button() and seat.string == "Usiądź":
+                            print("taking a seat")
+                            response = p.send({"command": "take seat",
+                                               "user": p.username,
+                                               "table nr": seat.table.id,
+                                               "seat": seat.seat})
+                            status_game = "sitting"
 
         elif status_game == "sitting":
             redraw_sitting(screen)
