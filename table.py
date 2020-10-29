@@ -16,8 +16,14 @@ class Table:
     def set_player(self, index, username, address):
         self.players[index] = (username, address)
 
+    def remove_player(self, index):
+        self.players[index] = None
+
     def set_connected(self, index):
         self.connected[index] = True
+
+    def set_disconnected(self, index):
+        self.connected[index] = False
 
     def __repr__(self):
         return f"Table nr {self.id}"
