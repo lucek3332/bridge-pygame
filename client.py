@@ -122,7 +122,10 @@ def mainLoop():
                               "table nr": table.id})
             table = response.get("table")
             if table.is_full():
-                status_game = "dealing cards"
+                status_game = "bidding"
+                response = p.send({"command": "shuffle",
+                                   "user": p.username,
+                                   "table nr": table.id})
             redraw_waiting_at_table(screen, font, font2, buttons, table, p.username)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -136,7 +139,7 @@ def mainLoop():
                         status_game = "tables"
                         buttons = [create_table_btn]
 
-        elif status_game == "dealing cards":
+        elif status_game == "bidding":
             response = p.send({"command": "waiting at table",   # Need to change
                                "user": p.username,
                                "table nr": table.id})

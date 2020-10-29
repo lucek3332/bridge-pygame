@@ -1,3 +1,6 @@
+from board import Board
+
+
 class Table:
     def __init__(self, table_id):
         self.id = table_id
@@ -27,3 +30,8 @@ class Table:
 
     def __repr__(self):
         return f"Table nr {self.id}"
+
+    def next_board(self):
+        self.nr_boards += 1
+        self.board = Board(self.nr_boards)
+        self.board.players = self.players

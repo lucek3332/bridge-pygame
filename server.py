@@ -125,6 +125,12 @@ def handle_connection(conn, addr):
                                               "empty_tables": empty_tables,
                                               "count_players": countingPlayer})
 
+            elif received_obj.get("command") == "shuffle":
+                t = tables.get(received_obj.get("table nr"))
+                t.next_board()
+                sending_bytes = pickle.dumps({"response": "ok",
+                                              "table": t})
+
             sending_header = f"{len(sending_bytes):<{HEADER_SIZE}}"
             sending_data = bytes(sending_header, "utf-8") + sending_bytes
             conn.send(sending_data)

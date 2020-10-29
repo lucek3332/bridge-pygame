@@ -3,6 +3,6 @@
 ## About 
 Multiplayer, online, popular card game - bridge.
 
-## Requiremenets
+## Requirements
 - Python
 - Pygame
