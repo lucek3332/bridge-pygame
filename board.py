@@ -1,5 +1,6 @@
 import random
 from card import Card
+from bid import Bid
 
 
 class Board:
@@ -82,7 +83,7 @@ class Board:
 
         if seat == 0:
             x = round(win.get_width() / 2 - width / 2)
-            y = 590
+            y = 790
         elif seat == 1:
             x = 60
             y = round(win.get_height() / 2 - height / 2)
@@ -91,7 +92,7 @@ class Board:
             x = round(win.get_width() / 2 - width / 2)
             y = 150
         else:
-            x = 800
+            x = 1000
             y = round(win.get_height() / 2 - height / 2)
             vertical = True
 
@@ -115,7 +116,7 @@ class Board:
         self.turn += 1
         if self.turn > 3:
             self.turn = 0
-        self.bidding.append(bid)
+        self.bidding.append(Bid(bid))
         if self.end_bidding():
             if self.dealer == 0:
                 self.bidding = [None, None, None] + self.bidding
@@ -136,10 +137,10 @@ class Board:
         return self.bids
 
     def end_bidding(self):
-        if all(b == "pas" for b in self.bidding[:4]):
+        if all(b.bid == "pas" for b in self.bidding[:4]):
             self.status = "play"
             return True
-        elif all(b == "pas" for b in self.bidding[:-3]):
+        elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:
             self.status = "play"
             return True
         return False

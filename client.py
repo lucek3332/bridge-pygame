@@ -8,8 +8,8 @@ pygame.init()
 icon = pygame.image.load("images/icon.png")
 
 # Screen settings
-screenWidth = 1000
-screenHeight = 800
+screenWidth = 1200
+screenHeight = 1000
 screen = pygame.display.set_mode((screenWidth, screenHeight))
 pygame.display.set_caption("Bridge")
 pygame.display.set_icon(icon)
@@ -38,9 +38,9 @@ class InputString:
 
 
 # Buttons
-confirm_name_btn = Button(200, 80, (7, 32, 110), "POTWIERDŹ", 400, 500)
-create_table_btn = Button(200, 80, (7, 32, 110), "ZAŁÓŻ STÓŁ", 750, 680)
-lobby_btn = Button(200, 80, (7, 32, 110), "WSTAŃ", 30, 700)
+confirm_name_btn = Button(200, 80, (7, 32, 110), "POTWIERDŹ", 500, 580)
+create_table_btn = Button(200, 80, (7, 32, 110), "ZAŁÓŻ STÓŁ", 950, 880)
+lobby_btn = Button(200, 80, (7, 32, 110), "WSTAŃ", 30, 900)
 
 
 def mainLoop():
@@ -90,7 +90,7 @@ def mainLoop():
             if response.get("response") != "ok":
                 if response.get("response") == "user exist":
                     status_game = "user exist"
-            empty_tables = list(response.get("empty_tables").values())[:3]
+            empty_tables = list(response.get("empty_tables").values())[:4]
             currentPlayers = response.get("count_players")
             redraw_tables(screen, font, font2, buttons, currentPlayers)
             seating_buttons = draw_seats(screen, empty_tables)
@@ -100,7 +100,7 @@ def mainLoop():
                     run = False
                     pygame.quit()
                 if event.type == pygame.MOUSEBUTTONUP:
-                    if create_table_btn.on_button() and len(empty_tables) < 3:
+                    if create_table_btn.on_button() and len(empty_tables) < 4:
                         response = p.send({"command": "create table",
                                            "user": p.username})
                         status_game = "waiting at table"

@@ -7,7 +7,7 @@ def redraw_insert_name(win, font, player_name, buttons):
     player_name_text = font.render(player_name.get_string(), 1, (255, 255, 255))
     type_your_name = font.render("Wpisz swoją nazwę użytkownika", 1, (0, 0, 0))
     pygame.draw.rect(win, (7, 32, 110), (round(win.get_width() / 2 - 150), round(win.get_height() / 2 - 50), 300, 100))
-    win.blit(type_your_name, (round(win.get_width() / 2 - type_your_name.get_width() / 2), 300))
+    win.blit(type_your_name, (round(win.get_width() / 2 - type_your_name.get_width() / 2), 400))
     win.blit(player_name_text, (round(win.get_width() / 2 - player_name_text.get_width() / 2), round(win.get_height() / 2 - player_name_text.get_height() / 2)))
     for btn in buttons:
         btn.draw(win)
@@ -25,11 +25,11 @@ def redraw_user_exist(win, font):
 def redraw_tables(win, font, font2, buttons, online_players):
     win.fill((40, 125, 67))
     tables_text = font2.render("Dostępne stoły", 1, (0, 0, 0))
-    max_tables_text = font.render("Maksymalna liczba oczekujących stołów: 3", 1, (0, 0, 0))
+    max_tables_text = font.render("Maksymalna liczba oczekujących stołów: 4", 1, (0, 0, 0))
     online_players_text = font.render(f"Graczy online {online_players}", 1, (0, 0, 0))
     win.blit(tables_text, (round(win.get_width() / 2 - tables_text.get_width() / 2), 20))
-    win.blit(max_tables_text, (120, 730))
-    win.blit(online_players_text, (760, 150))
+    win.blit(max_tables_text, (120, 930))
+    win.blit(online_players_text, (960, 150))
     for btn in buttons:
         btn.draw(win)
 
@@ -92,20 +92,20 @@ def redraw_sitting(win, font, table, user):
         if i < 0:
             i += 4
         if i == 0:
-            win.blit(player_text, (round(win.get_width() / 2 - player_text.get_width() / 2), 750))
+            win.blit(player_text, (round(win.get_width() / 2 - player_text.get_width() / 2), 950))
         elif i == 1:
-            win.blit(player_text, (round(90 - player_text.get_width() / 2), 100))
+            win.blit(player_text, (round(120 - player_text.get_width() / 2), 100))
         elif i == 2:
             win.blit(player_text, (round(win.get_width() / 2 - player_text.get_width() / 2), 100))
         elif i == 3:
-            win.blit(player_text, (round(850 - player_text.get_width() / 2), 100))
+            win.blit(player_text, (round(1050 - player_text.get_width() / 2), 100))
 
 
 def redraw_waiting_at_table(win, font, font2, buttons, table, user):
     redraw_sitting(win, font, table, user)
     table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
     win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
-    waiting_text = font.render("Oczekiwanie na graczy", 1, (0, 0, 0), 1)
+    waiting_text = font2.render("Oczekiwanie na graczy", 1, (0, 0, 0), 1)
     win.blit(waiting_text, (round(win.get_width() / 2 - waiting_text.get_width() / 2),
                             round(win.get_height() / 2 - waiting_text.get_height() / 2)))
     for btn in buttons:
