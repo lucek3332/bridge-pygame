@@ -94,11 +94,11 @@ def redraw_sitting(win, font, table, user):
         if i == 0:
             win.blit(player_text, (round(win.get_width() / 2 - player_text.get_width() / 2), 700))
         elif i == 1:
-            win.blit(player_text, (50, round(win.get_height() / 2 - player_text.get_height() / 2)))
+            win.blit(player_text, (round(90 - player_text.get_width() / 2), 100))
         elif i == 2:
             win.blit(player_text, (round(win.get_width() / 2 - player_text.get_width() / 2), 100))
         elif i == 3:
-            win.blit(player_text, (850, round(win.get_height() / 2 - player_text.get_height() / 2)))
+            win.blit(player_text, (round(850 - player_text.get_width() / 2), 100))
 
 
 def redraw_waiting_at_table(win, font, font2, buttons, table, user):
@@ -113,12 +113,27 @@ def redraw_waiting_at_table(win, font, font2, buttons, table, user):
     pygame.display.update()
 
 
-def redraw_dealing(win, font, font2, buttons, table, user):
+def redraw_bidding(win, font, font2, buttons, table, board, user):
     redraw_sitting(win, font, table, user)
     table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
     win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
-    game_ready_text = font2.render("GRAMY", 1, (0, 0, 0))
+    game_ready_text = font2.render("LICYTACJA", 1, (0, 0, 0))
     win.blit(game_ready_text, (round(win.get_width() / 2 - game_ready_text.get_width() / 2), round(win.get_height() / 2 - game_ready_text.get_height() / 2)))
+
+    for i, p in enumerate(table.players):
+        if p:
+            if p[0] == user:
+                user_seat = i
+    for i, p in enumerate(table.players):
+        is_my_hand = False
+        if p[0] == user:
+            is_my_hand = True
+        hand = i
+        i -= user_seat
+        if i < 0:
+            i += 4
+        board.draw_hand(win, hand, i, is_my_hand)
+
     for btn in buttons:
         btn.draw(win)
     pygame.display.update()

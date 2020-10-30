@@ -40,7 +40,7 @@ class InputString:
 # Buttons
 confirm_name_btn = Button(200, 80, (7, 32, 110), "POTWIERDŹ", 400, 500)
 create_table_btn = Button(200, 80, (7, 32, 110), "ZAŁÓŻ STÓŁ", 750, 680)
-lobby_btn = Button(200, 80, (7, 32, 110), "WSTAŃ", 50, 680)
+lobby_btn = Button(200, 80, (7, 32, 110), "WSTAŃ", 30, 700)
 
 
 def mainLoop():
@@ -140,11 +140,15 @@ def mainLoop():
                         buttons = [create_table_btn]
 
         elif status_game == "bidding":
-            response = p.send({"command": "waiting at table",   # Need to change
+            response = p.send({"command": "bidding",   # Need to change
                                "user": p.username,
-                               "table nr": table.id})
+                               "table nr": table.id,})
+            if response.get("response") == "sb left table":
+                status_game = "waiting at table"
+                continue
             table = response.get("table")
-            redraw_dealing(screen, font, font2, buttons, table, p.username)
+            board = response.get("board")
+            redraw_bidding(screen, font, font2, buttons, table, board, p.username)
             if not table.is_full():
                 status_game = "waiting at table"
 
