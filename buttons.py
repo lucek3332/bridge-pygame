@@ -6,6 +6,7 @@ pygame.init()
 
 class Button:
     button_font = pygame.font.SysFont("Arial", 32)
+    button_font2 = pygame.font.SysFont("Arial", 20)
 
     def __init__(self, width, height, color, string, x, y):
         self.width = width
@@ -33,3 +34,10 @@ class SeatingButton(Button):
         super().__init__(width, height, color, string, x, y)
         self.table = table
         self.seat = seat
+
+    def draw(self, win):
+        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
+        button_text = self.button_font.render("{}".format(self.string), True, (255, 255, 255))
+        if button_text.get_width() >= self.width:
+            button_text = self.button_font2.render("{}".format(self.string), True, (255, 255, 255))
+        win.blit(button_text, (round(self.x + self.width / 2 - button_text.get_width() / 2), round(self.y + self.height / 2 - button_text.get_height() / 2)))

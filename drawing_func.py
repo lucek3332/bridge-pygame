@@ -48,16 +48,16 @@ def draw_seats(win, empty_tables):
                     x = 80 + 250 - 60
                     y = 120 + 200 * i + 135 - 30
                 elif j == 1:
-                    x = 40 + 125 - 60
+                    x = 30 + 125 - 60
                     y = 120 + 200 * i + 90 - 30
                 elif j == 2:
                     x = 80 + 250 - 60
                     y = 120 + 200 * i + 45 - 30
                 else:
-                    x = 120 + 375 - 60
+                    x = 110 + 375 - 60
                     y = 120 + 200 * i + 90 - 30
 
-                seating_buttons.append(SeatingButton(120, 60, (7, 32, 110), user_text, x, y, table, j))
+                seating_buttons.append(SeatingButton(140, 60, (7, 32, 110), user_text, x, y, table, j))
     for btn in seating_buttons:
         btn.draw(win)
     return seating_buttons
@@ -92,7 +92,7 @@ def redraw_sitting(win, font, table, user):
         if i < 0:
             i += 4
         if i == 0:
-            win.blit(player_text, (round(win.get_width() / 2 - player_text.get_width() / 2), 700))
+            win.blit(player_text, (round(win.get_width() / 2 - player_text.get_width() / 2), 750))
         elif i == 1:
             win.blit(player_text, (round(90 - player_text.get_width() / 2), 100))
         elif i == 2:
@@ -118,6 +118,18 @@ def redraw_bidding(win, font, font2, buttons, table, board, user):
     table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
     win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
     game_ready_text = font2.render("LICYTACJA", 1, (0, 0, 0))
+    if board.dealer == 0:
+        dealer = "Dealer: S"
+    elif board.dealer == 1:
+        dealer = "Dealer: E"
+    elif board.dealer == 2:
+        dealer = "Dealer: N"
+    else:
+        dealer = "Dealer: W"
+    dealer_text = font.render(dealer, 1, (0, 0, 0))
+    vulnerable_text = font.render(board.vulnerable_txt, 1, (0, 0, 0))
+    win.blit(dealer_text, (20, 10))
+    win.blit(vulnerable_text, (20, 50))
     win.blit(game_ready_text, (round(win.get_width() / 2 - game_ready_text.get_width() / 2), round(win.get_height() / 2 - game_ready_text.get_height() / 2)))
 
     for i, p in enumerate(table.players):
