@@ -1,6 +1,6 @@
 import random
 from card import Card
-from bid import Bid
+from bid import Bid, BidButton, BidButtonSuit, SpecialBid
 
 
 class Board:
@@ -12,7 +12,7 @@ class Board:
             "5C", "5D", "5H", "5S", "5N",
             "6C", "6D", "6H", "6S", "6N",
             "7C", "7D", "7H", "7S", "7N",
-            "pas"]
+            ]
 
     def __init__(self, board_id):
         self.id = board_id
@@ -126,15 +126,31 @@ class Board:
     def get_available_bids(self, user):
         if self.winning_bid:
             indx = self.bids.index(self.winning_bid[:2])
+            special_bids = ["pas"]
             if user not in self.winning_side:
                 if self.winning_bid[-1] == "X" and len(self.winning_bid) == 3:
-                    return self.bids[indx + 1:] + ["rktr"]
+                    special_bids = special_bids + ["rktr"]
                 elif self.winning_bid[-1] == "X" and len(self.winning_bid) == 4:
-                    return self.bids[indx + 1:]
+                    pass
                 else:
-                    return self.bids[indx + 1:] + ["ktr"]
-            return self.bids[indx + 1:]
-        return self.bids
+                    special_bids = special_bids + ["ktr"]
+            available_bids = self.bids[indx + 1:]
+        else:
+            available_bids = self.bids
+        available_bids_dictio = dict()
+        for b in available_bids:
+            if available_bids_dictio.get(b[0]):
+                available_bids_dictio[b[0]].append(b[1])
+            else:
+                available_bids_dictio[b[0]] = [b[1]]
+        for k in available_bids_dictio.keys():
+            k = BidButton(k)
+        special_bids = [SpecialBid(b) for b in special_bids]
+        normal_bids = dict()
+        for k, values in available_bids_dictio.items():
+            new_key = BidButton(k)
+            normal_bids[new_key] = [BidButtonSuit(v, new_key) for v in values]
+        return normal_bids, special_bids
 
     def end_bidding(self):
         if all(b.bid == "pas" for b in self.bidding[:4]):
