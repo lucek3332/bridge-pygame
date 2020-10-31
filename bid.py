@@ -28,7 +28,7 @@ class Bid:
 
 
 class BidButton:
-    font = pygame.font.SysFont("Arial", 20)
+    font = pygame.font.SysFont("Arial", 32)
 
     def __init__(self, bid):
         self.bid = bid
@@ -37,15 +37,14 @@ class BidButton:
         self.text = self.font.render(bid, 1, (0, 0, 0), 1)
 
     def draw(self, win, x, y):
-        self.rect = (x, y, 20, 20)
-        pygame.draw.rect(win, (255, 255, 255), self.rect, width=0, border_radius=5)
-        win.blit(self.text, (x, y))
+        self.rect = (x, y, 35, 35)
+        pygame.draw.rect(win, (255, 255, 255), self.rect)
+        win.blit(self.text, (round(x + self.rect[2] / 2 - self.text.get_width() / 2), round(y + self.rect[3] / 2 - self.text.get_height() / 2)))
 
     def click(self):
         pos = pygame.mouse.get_pos()
         if self.rect[0] < pos[0] < self.rect[0] + self.rect[2]:
             if self.rect[1] < pos[1] < self.rect[1] + self.rect[3]:
-                self.active = True
                 return True
         return False
 
@@ -66,8 +65,8 @@ class BidButtonSuit:
 
     def draw(self, win, x, y):
         if self.first_part_bid.active:
-            self.rect = (x, y, 20, 20)
-            pygame.draw.rect(win, (255, 255, 255), self.rect, width=0, border_radius=5)
+            self.rect = (x, y, 35, 35)
+            pygame.draw.rect(win, (255, 255, 255), self.rect)
             win.blit(self.image, (x, y))
         pass
 
@@ -84,7 +83,7 @@ class BidButtonSuit:
 
 
 class SpecialBid:
-    font = pygame.font.SysFont("Arial", 20)
+    font = pygame.font.SysFont("Arial", 32)
 
     def __init__(self, bid):
         self.bid = bid
@@ -95,12 +94,12 @@ class SpecialBid:
         elif bid == "rktr":
             self.text = self.font.render('XX', 1, (0, 0, 0), 1)
         else:
-            self.text = self.font.render('pas', 1, (0, 0, 0), 1)
+            self.text = self.font.render('P', 1, (0, 0, 0), 1)
 
     def draw(self, win, x, y):
-        self.rect = (x, y, 20, 20)
-        pygame.draw.rect(win, (255, 255, 255), self.rect, width=0, border_radius=5)
-        win.blit(self.text, (x, y))
+        self.rect = (x, y, 42, 35)
+        pygame.draw.rect(win, (255, 255, 255), self.rect)
+        win.blit(self.text, (round(x + self.rect[2] / 2 - self.text.get_width() / 2), round(y + self.rect[3] / 2 - self.text.get_height() / 2)))
 
     def click(self):
         pos = pygame.mouse.get_pos()

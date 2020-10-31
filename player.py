@@ -16,6 +16,7 @@ class Player:
         self.socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.welcome = self.connect()
         self.username = username
+        self.position = None
         print(self.welcome)
 
     def connect(self):

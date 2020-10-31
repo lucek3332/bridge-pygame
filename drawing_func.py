@@ -102,7 +102,7 @@ def redraw_sitting(win, font, table, user):
 
 
 def redraw_waiting_at_table(win, font, font2, buttons, table, user):
-    redraw_sitting(win, font, table, user)
+    redraw_sitting(win, font, table, user.username)
     table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
     win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
     waiting_text = font2.render("Oczekiwanie na graczy", 1, (0, 0, 0), 1)
@@ -113,11 +113,7 @@ def redraw_waiting_at_table(win, font, font2, buttons, table, user):
     pygame.display.update()
 
 
-def redraw_bidding(win, font, font2, buttons, table, board, user):
-    redraw_sitting(win, font, table, user)
-    table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
-    win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
-    game_ready_text = font2.render("LICYTACJA", 1, (0, 0, 0))
+def draw_cards(win, font, table, board, user):
     if board.dealer == 0:
         dealer = "Dealer: S"
     elif board.dealer == 1:
@@ -130,7 +126,7 @@ def redraw_bidding(win, font, font2, buttons, table, board, user):
     vulnerable_text = font.render(board.vulnerable_txt, 1, (0, 0, 0))
     win.blit(dealer_text, (20, 10))
     win.blit(vulnerable_text, (20, 50))
-    win.blit(game_ready_text, (round(win.get_width() / 2 - game_ready_text.get_width() / 2), round(win.get_height() / 2 - game_ready_text.get_height() / 2)))
+
 
     for i, p in enumerate(table.players):
         if p:
@@ -146,6 +142,57 @@ def redraw_bidding(win, font, font2, buttons, table, board, user):
             i += 4
         board.draw_hand(win, hand, i, is_my_hand)
 
+
+def redraw_bidding(win, font, font2, buttons, table, board, user, normal_bids, special_bids):
+    redraw_sitting(win, font, table, user.username)
+    table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
+    board_text = font.render(f"Rozdanie {board.id}", 1, (0, 0, 0))
+    win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
+    win.blit(board_text, (1000, 20))
+    draw_cards(win, font, table, board, user.username)
+    if board.turn == user.position:
+        last_x = 0
+        for i, bids in enumerate(normal_bids.items()):
+            bids[0].draw(win, 835 + i * 38, 850)
+            last_x = 835 + i * 38
+            if bids[0].active:
+                for j, sb in enumerate(bids[1]):
+                    sb.draw(win, 835 + i * 38, 890)
+        if last_x:
+            for j, b in enumerate(special_bids):
+                b.draw(win, last_x + 38 + j * 45, 850)
+        else:
+            for j, b in enumerate(special_bids):
+                b.draw(win, 835 + j * 45, 850)
+    for i, seat in enumerate([(1, "W"), (2, "N"), (3, "E"), (0, "S")]):
+        if board.vulnerable[seat[0]]:
+            color_rect = (166, 20, 3)
+            color_text = (255, 255, 255)
+        else:
+            color_rect = (255, 255, 255)
+            color_text = (0, 0, 0)
+        header_txt = font.render(seat[1], 1, color_text)
+        pygame.draw.rect(win, color_rect, (round(win.get_width() / 2 + (i - 2) * 60), 310, 60, 38))
+        win.blit(header_txt, (round(win.get_width() / 2 + (i - 1.5) * 60 - header_txt.get_width() / 2), round(310 + 19 - header_txt.get_height() / 2)))
+    if not board.end_bidding():
+        if board.dealer == 0:
+            board.bidding = [None, None, None] + board.bidding
+        else:
+            board.bidding = [None] * (board.dealer - 1) + board.bidding
+
+    for btn in buttons:
+        btn.draw(win)
+    pygame.display.update()
+
+
+def redraw_playing(win, font, font2, buttons, table, board, user):
+    redraw_sitting(win, font, table, user.username)
+    table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
+    win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
+    game_ready_text = font2.render("ROZGRYWKA", 1, (0, 0, 0))
+    win.blit(game_ready_text, (round(win.get_width() / 2 - game_ready_text.get_width() / 2),
+                               round(win.get_height() / 2 - game_ready_text.get_height() / 2)))
+    draw_cards(win, font, table, board, user.username)
     for btn in buttons:
         btn.draw(win)
     pygame.display.update()

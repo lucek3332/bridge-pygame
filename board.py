@@ -124,9 +124,9 @@ class Board:
                 self.bidding = [None] * (self.dealer - 1) + self.bidding
 
     def get_available_bids(self, user):
+        special_bids = ["pas"]
         if self.winning_bid:
             indx = self.bids.index(self.winning_bid[:2])
-            special_bids = ["pas"]
             if user not in self.winning_side:
                 if self.winning_bid[-1] == "X" and len(self.winning_bid) == 3:
                     special_bids = special_bids + ["rktr"]
@@ -143,8 +143,6 @@ class Board:
                 available_bids_dictio[b[0]].append(b[1])
             else:
                 available_bids_dictio[b[0]] = [b[1]]
-        for k in available_bids_dictio.keys():
-            k = BidButton(k)
         special_bids = [SpecialBid(b) for b in special_bids]
         normal_bids = dict()
         for k, values in available_bids_dictio.items():

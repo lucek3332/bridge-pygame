@@ -104,6 +104,7 @@ def mainLoop():
                         response = p.send({"command": "create table",
                                            "user": p.username})
                         status_game = "waiting at table"
+                        p.position = 0
                         buttons = [lobby_btn]
                         table = response.get("table")
                     for seat in seating_buttons:
@@ -112,6 +113,7 @@ def mainLoop():
                                                "user": p.username,
                                                "table nr": seat.table.id,
                                                "seat": seat.seat})
+                            p.position = seat.seat
                             table = response.get("table")
                             status_game = "waiting at table"
                             buttons = [lobby_btn]
@@ -126,7 +128,7 @@ def mainLoop():
                 response = p.send({"command": "shuffle",
                                    "user": p.username,
                                    "table nr": table.id})
-            redraw_waiting_at_table(screen, font, font2, buttons, table, p.username)
+            redraw_waiting_at_table(screen, font, font2, buttons, table, p)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -136,19 +138,24 @@ def mainLoop():
                         response = p.send({"command": "stand",
                                            "user": p.username,
                                            "table nr": table.id})
+                        p.position = None
                         status_game = "tables"
                         buttons = [create_table_btn]
 
         elif status_game == "bidding":
             response = p.send({"command": "bidding",   # Need to change
                                "user": p.username,
-                               "table nr": table.id,})
+                               "table nr": table.id})
             if response.get("response") == "sb left table":
                 status_game = "waiting at table"
                 continue
             table = response.get("table")
             board = response.get("board")
-            redraw_bidding(screen, font, font2, buttons, table, board, p.username)
+            normal_bids = dict()
+            special_bids = []
+            if p.position == board.turn:
+                normal_bids, special_bids = board.get_available_bids(p.position)
+            redraw_bidding(screen, font, font2, buttons, table, board, p, normal_bids, special_bids)
             if not table.is_full():
                 status_game = "waiting at table"
 
@@ -162,7 +169,20 @@ def mainLoop():
                                            "user": p.username,
                                            "table nr": table.id})
                         status_game = "tables"
+                        p.position = None
                         buttons = [create_table_btn]
+                    for bid, bidSuits in normal_bids.items():
+                        if bid.click():
+                            for b in normal_bids.keys():
+                                b.active = False
+                            bid.active = True
+                            response = p.send({"command": "click number",
+                                               "user": p.username,
+                                               "table nr": table.id,
+                                               "bid": bid})
+                        # for bidSuit in bidSuits:
+                        #    if bidSuit.click():
+                        #        print(f"Zalicytowałem {bid.bid}{bidSuit.bid}")
 
 
 mainLoop()
