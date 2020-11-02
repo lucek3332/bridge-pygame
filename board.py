@@ -30,6 +30,8 @@ class Board:
         self.winning_side = []
         self.vulnerable = [False, False, False, False]
         self.vulnerable_txt = "Wszyscy przed"
+        self.available_bids = None
+        self.special_bids = None
         self.set_vulnerable()
         self.set_dealer()
         self.shuffle()
@@ -66,6 +68,7 @@ class Board:
         else:
             self.dealer = 1
         self.turn = self.dealer
+        self.available_bids, self.special_bids = self.get_available_bids()
 
     def draw_hand(self, win, hand, seat, user=False):
         if hand == 0:
@@ -117,17 +120,18 @@ class Board:
         if self.turn > 3:
             self.turn = 0
         self.bidding.append(Bid(bid))
+        self.available_bids, self.special_bids = self.get_available_bids()
         if self.end_bidding():
             if self.dealer == 0:
                 self.bidding = [None, None, None] + self.bidding
             else:
                 self.bidding = [None] * (self.dealer - 1) + self.bidding
 
-    def get_available_bids(self, user):
+    def get_available_bids(self):
         special_bids = ["pas"]
         if self.winning_bid:
             indx = self.bids.index(self.winning_bid[:2])
-            if user not in self.winning_side:
+            if self.turn not in self.winning_side:
                 if self.winning_bid[-1] == "X" and len(self.winning_bid) == 3:
                     special_bids = special_bids + ["rktr"]
                 elif self.winning_bid[-1] == "X" and len(self.winning_bid) == 4:
@@ -151,7 +155,7 @@ class Board:
         return normal_bids, special_bids
 
     def end_bidding(self):
-        if all(b.bid == "pas" for b in self.bidding[:4]):
+        if all(b.bid == "pas" for b in self.bidding[:4]) and len(self.bidding) == 4:
             self.status = "play"
             return True
         elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:

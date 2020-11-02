@@ -1,45 +1,31 @@
 import pygame
 
-pygame.init()
 
-# Images of cards
-font = pygame.font.SysFont("Arial", 20)
-C = pygame.image.load("images/bid/004-club.png")
-D = pygame.image.load("images/bid/002-diamond.png")
-H = pygame.image.load("images/bid/003-like.png")
-S = pygame.image.load("images/bid/001-spades.png")
-N = font.render("N", 1, (0, 0, 0))
+pygame.init()
 
 
 class Bid:
-    font = pygame.font.SysFont("Arial", 20)
+    # font = pygame.font.SysFont("Arial", 20)
 
     def __init__(self, bid):
         self.bid = bid
-        self.text = self.font.render(bid, 1, (0, 0, 0))
+        # self.text = self.font.render(bid, 1, (0, 0, 0))
         self.rect = None
 
-    def draw(self, win, x, y):
+    """def draw(self, win, x, y):
         win.blit(self.text, (x, y))
-        self.rect = (x, y, 20, 20)
+        self.rect = (x, y, 20, 20)"""
 
     def __repr__(self):
         return f"Bid: {self.bid}"
 
 
 class BidButton:
-    font = pygame.font.SysFont("Arial", 32)
 
     def __init__(self, bid):
         self.bid = bid
         self.active = False
         self.rect = None
-        self.text = self.font.render(bid, 1, (0, 0, 0), 1)
-
-    def draw(self, win, x, y):
-        self.rect = (x, y, 35, 35)
-        pygame.draw.rect(win, (255, 255, 255), self.rect)
-        win.blit(self.text, (round(x + self.rect[2] / 2 - self.text.get_width() / 2), round(y + self.rect[3] / 2 - self.text.get_height() / 2)))
 
     def click(self):
         pos = pygame.mouse.get_pos()
@@ -61,14 +47,6 @@ class BidButtonSuit:
         self.first_part_bid = first_button
         self.rect = None
         self.bidded = False
-        self.image = eval(bid)
-
-    def draw(self, win, x, y):
-        if self.first_part_bid.active:
-            self.rect = (x, y, 35, 35)
-            pygame.draw.rect(win, (255, 255, 255), self.rect)
-            win.blit(self.image, (x, y))
-        pass
 
     def click(self):
         pos = pygame.mouse.get_pos()
@@ -83,23 +61,17 @@ class BidButtonSuit:
 
 
 class SpecialBid:
-    font = pygame.font.SysFont("Arial", 32)
 
     def __init__(self, bid):
         self.bid = bid
         self.bidded = False
         self.rect = None
         if bid == "ktr":
-            self.text = self.font.render('X', 1, (0, 0, 0), 1)
+            self.text = 'X'
         elif bid == "rktr":
-            self.text = self.font.render('XX', 1, (0, 0, 0), 1)
+            self.text = 'XX'
         else:
-            self.text = self.font.render('P', 1, (0, 0, 0), 1)
-
-    def draw(self, win, x, y):
-        self.rect = (x, y, 42, 35)
-        pygame.draw.rect(win, (255, 255, 255), self.rect)
-        win.blit(self.text, (round(x + self.rect[2] / 2 - self.text.get_width() / 2), round(y + self.rect[3] / 2 - self.text.get_height() / 2)))
+            self.text = 'P'
 
     def click(self):
         pos = pygame.mouse.get_pos()
