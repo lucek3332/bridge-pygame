@@ -2,6 +2,7 @@ from player import Player
 from drawing_func import *  # importing pygame as well
 from buttons import Button
 
+
 pygame.init()
 
 # Images
@@ -143,7 +144,7 @@ def mainLoop():
                         buttons = [create_table_btn]
 
         elif status_game == "bidding":
-            response = p.send({"command": "bidding",   # Need to change
+            response = p.send({"command": "bidding",
                                "user": p.username,
                                "table nr": table.id})
             if response.get("response") == "sb left table":
@@ -151,10 +152,14 @@ def mainLoop():
                 continue
             table = response.get("table")
             board = response.get("board")
+            if board.status == "play":
+                status_game = "playing"
+                continue
             normal_bids = dict()
             special_bids = []
             if p.position == board.turn:
-                normal_bids, special_bids = board.get_available_bids(p.position)
+                normal_bids = board.available_bids
+                special_bids = board.special_bids
             redraw_bidding(screen, font, font2, buttons, table, board, p, normal_bids, special_bids)
             if not table.is_full():
                 status_game = "waiting at table"
@@ -179,10 +184,52 @@ def mainLoop():
                             response = p.send({"command": "click number",
                                                "user": p.username,
                                                "table nr": table.id,
-                                               "bid": bid})
-                        # for bidSuit in bidSuits:
-                        #    if bidSuit.click():
-                        #        print(f"Zalicytowałem {bid.bid}{bidSuit.bid}")
+                                               "bid": bid
+                                               })
+                            break
+                        if bid.active:
+                            for bidSuit in bidSuits:
+                                if bidSuit.click():
+                                    clicked_bid = bid.bid + bidSuit.bid
+                                    response = p.send({"command": "make bid",
+                                                       "user": p.username,
+                                                       "table nr": table.id,
+                                                       "bid": clicked_bid,
+                                                       "user pos": p.position
+                                                       })
+                                    break
+                    for special_bid in special_bids:
+                        if special_bid.click():
+                            response = p.send({"command": "make bid",
+                                               "user": p.username,
+                                               "table nr": table.id,
+                                               "bid": special_bid.bid,
+                                               "user pos": p.position
+                                               })
+
+        elif status_game == "playing":
+            response = p.send({"command": "playing",
+                               "user": p.username,
+                               "table nr": table.id})
+            if response.get("response") == "sb left table":
+                status_game = "waiting at table"
+                continue
+            table = response.get("table")
+            board = response.get("board")
+            redraw_playing(screen, font, font2, buttons, table, board, p)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    pygame.quit()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if lobby_btn.on_button():
+                        response = p.send({"command": "stand",
+                                           "user": p.username,
+                                           "table nr": table.id})
+                        p.position = None
+                        status_game = "tables"
+                        buttons = [create_table_btn]
 
 
 mainLoop()
