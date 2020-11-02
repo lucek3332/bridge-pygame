@@ -2,6 +2,15 @@ import pygame
 from buttons import SeatingButton
 
 
+# Images of cards
+bid_font = pygame.font.SysFont("Arial", 24)
+C = pygame.image.load("images/bid/clubs.png")
+D = pygame.image.load("images/bid/diamonds.png")
+H = pygame.image.load("images/bid/hearts.png")
+S = pygame.image.load("images/bid/spades.png")
+N = bid_font.render("N", 1, (0, 0, 0), 1)
+
+
 def redraw_insert_name(win, font, player_name, buttons):
     win.fill((40, 125, 67))
     player_name_text = font.render(player_name.get_string(), 1, (255, 255, 255))
@@ -127,7 +136,6 @@ def draw_cards(win, font, table, board, user):
     win.blit(dealer_text, (20, 10))
     win.blit(vulnerable_text, (20, 50))
 
-
     for i, p in enumerate(table.players):
         if p:
             if p[0] == user:
@@ -153,17 +161,40 @@ def redraw_bidding(win, font, font2, buttons, table, board, user, normal_bids, s
     if board.turn == user.position:
         last_x = 0
         for i, bids in enumerate(normal_bids.items()):
-            bids[0].draw(win, 835 + i * 38, 850)
-            last_x = 835 + i * 38
+            x = 835 + i * 38
+            y = 850
+            rect = (x, y, 35, 35)
+            bids[0].rect = rect
+            bids[0].rect = (x, y, 35, 35)
+            text = font.render(bids[0].bid, 1, (0, 0, 0), 1)
             if bids[0].active:
-                for j, sb in enumerate(bids[1]):
-                    sb.draw(win, 835 + i * 38, 890)
-        if last_x:
-            for j, b in enumerate(special_bids):
-                b.draw(win, last_x + 38 + j * 45, 850)
-        else:
-            for j, b in enumerate(special_bids):
-                b.draw(win, 835 + j * 45, 850)
+                pygame.draw.rect(win, (49, 224, 105), rect)
+            else:
+                pygame.draw.rect(win, (255, 255, 255), rect)
+            win.blit(text, (round(x + rect[2] / 2 - text.get_width() / 2), round(y + rect[3] / 2 - text.get_height() / 2)))
+            last_x = x
+            if bids[0].active:
+                for j, suitbid in enumerate(bids[1]):
+                    image = eval(suitbid.bid)
+                    x = 835 + j * 38
+                    y = 890
+                    rect = (x, y, 35, 35)
+                    suitbid.rect = rect
+                    pygame.draw.rect(win, (255, 255, 255), rect)
+                    win.blit(image, (round(x + rect[2] / 2 - image.get_width() / 2), round(y + rect[3] / 2 - image.get_height() / 2)))
+        for j, b in enumerate(special_bids):
+            if last_x:
+                x = last_x + 38 + j * 45
+            else:
+                x = 835 + j * 45
+            y = 850
+            rect = (x, y, 42, 35)
+            b.rect = rect
+            pygame.draw.rect(win, (255, 255, 255), rect)
+            text = font.render(b.text, 1, (0, 0, 0), 1)
+            win.blit(text, (round(x + rect[2] / 2 - text.get_width() / 2),
+                            round(y + rect[3] / 2 - text.get_height() / 2)))
+
     for i, seat in enumerate([(1, "W"), (2, "N"), (3, "E"), (0, "S")]):
         if board.vulnerable[seat[0]]:
             color_rect = (166, 20, 3)
