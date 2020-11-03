@@ -127,8 +127,9 @@ def handle_connection(conn, addr):
 
             elif received_obj.get("command") == "shuffle":
                 t = tables.get(received_obj.get("table nr"))
-                if not t.board:
+                if not t.board and t.queue % 4 == 0:
                     t.next_board()
+                t.set_queue()
                 sending_bytes = pickle.dumps({"response": "ok",
                                               "table": t,
                                               "board": t.board})
@@ -167,6 +168,14 @@ def handle_connection(conn, addr):
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,
                                                       "board": t.board})
+                elif received_obj.get("command") == "score":
+                    t = tables.get(received_obj.get("table nr"))
+                    if t:
+                        if t.board and t.queue % 4 == 0:
+                            t.board = None
+                        sending_bytes = pickle.dumps({"response": "ok",
+                                                      "table": t,
+                                                      "board": t.board})
                 if not t:
                     t = empty_tables.get(received_obj.get("table nr"))
                     if t.board:
@@ -174,7 +183,6 @@ def handle_connection(conn, addr):
                     sending_bytes = pickle.dumps({"response": "sb left table",
                                                   "table": t,
                                                   "board": t.board})
-
 
             sending_header = f"{len(sending_bytes):<{HEADER_SIZE}}"
             sending_data = bytes(sending_header, "utf-8") + sending_bytes

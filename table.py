@@ -9,6 +9,12 @@ class Table:
         self.board = None
         self.nr_boards = 0
         self.empty = True
+        self.queue = 0
+
+    def set_queue(self):
+        self.queue += 1
+        if self.queue > 3:
+            self.queue = 0
 
     def is_full(self):
         if all(p for p in self.connected):

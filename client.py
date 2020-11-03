@@ -129,6 +129,7 @@ def mainLoop():
                 response = p.send({"command": "shuffle",
                                    "user": p.username,
                                    "table nr": table.id})
+                continue
             redraw_waiting_at_table(screen, font, font2, buttons, table, p)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -214,8 +215,18 @@ def mainLoop():
             if response.get("response") == "sb left table":
                 status_game = "waiting at table"
                 continue
+
             table = response.get("table")
             board = response.get("board")
+            if not board.declarer:
+                redraw_score(screen, font, font2, buttons, table, board, p)
+                pygame.time.delay(2000)
+                status_game = "waiting at table"
+                response = p.send({"command": "score",
+                                   "user": p.username,
+                                   "table nr": table.id
+                                   })
+                continue
             redraw_playing(screen, font, font2, buttons, table, board, p)
 
             for event in pygame.event.get():
