@@ -210,6 +210,10 @@ def redraw_bidding(win, font, font2, buttons, table, board, user, normal_bids, s
             board.bidding = [None, None, None] + board.bidding
         else:
             board.bidding = [None] * (board.dealer - 1) + board.bidding
+    for i, b in enumerate(board.bidding):
+        if b:
+            text = font.render(b.bid, 1, (0, 0, 0))
+            win.blit(text, (round(win.get_width() / 2 + (i % 4 - 1.5) * 60 - text.get_width() / 2), round(345 + (i // 4) * 35 + 19 - text.get_height() / 2)))
 
     for btn in buttons:
         btn.draw(win)
@@ -224,6 +228,34 @@ def redraw_playing(win, font, font2, buttons, table, board, user):
     win.blit(game_ready_text, (round(win.get_width() / 2 - game_ready_text.get_width() / 2),
                                round(win.get_height() / 2 - game_ready_text.get_height() / 2)))
     draw_cards(win, font, table, board, user.username)
+    if board.declarer[1] == [0, 2]:
+        contract_text = font.render(f"Kontrakt {board.winning_bid} - NS", 1, (0, 0, 0))
+        if board.declarer == 0:
+            declarer_text = font.render("Rozgrywa: S", 1, (0, 0, 0))
+        else:
+            declarer_text = font.render("Rozgrywa: N", 1, (0, 0, 0))
+    else:
+        contract_text = font.render(f"Kontrakt {board.winning_bid} - WE", 1, (0, 0, 0))
+        if board.declarer == 1:
+            declarer_text = font.render("Rozgrywa: W", 1, (0, 0, 0))
+        else:
+            declarer_text = font.render("Rozgrywa: E", 1, (0, 0, 0))
+    win.blit(contract_text, (920, 880))
+    win.blit(declarer_text, (920, 920))
+
     for btn in buttons:
         btn.draw(win)
+    pygame.display.update()
+
+
+def redraw_score(win, font, font2, buttons, table, board, user):
+    redraw_sitting(win, font, table, user.username)
+    table_text = font2.render(f"Stół nr {table.id}", 1, (0, 0, 0))
+    win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
+    if not board.declarer:
+        score_text = font2.render("ROZDANIE PRZEPASOWANE", 1, (0, 0, 0))
+    else:
+        score_text = font2.render("WYNIK", 1, (0, 0, 0))
+    win.blit(score_text, (round(win.get_width() / 2 - score_text.get_width() / 2),
+                          round(win.get_height() / 2 - score_text.get_height() / 2)))
     pygame.display.update()

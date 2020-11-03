@@ -32,9 +32,15 @@ class Board:
         self.vulnerable_txt = "Wszyscy przed"
         self.available_bids = None
         self.special_bids = None
+        self.declarer = None
+        self.trump = None
+        self.lead = None
         self.set_vulnerable()
         self.set_dealer()
         self.shuffle()
+
+    def __repr__(self):
+        return f"Board nr {self.id}"
 
     def shuffle(self):
         shuffle_deck = self.deck
@@ -106,12 +112,31 @@ class Board:
             else:
                 x += 30
 
+    def set_actual_declarer(self, user):
+        if user in [0, 2]:
+            self.declarer = (user, [0, 2], self.trump)
+        else:
+            self.declarer = (user, [1, 3], self.trump)
+
+    def set_lead(self):
+        self.lead = self.declarer[0] + 1
+        if self.lead > 3:
+            self.lead = 0
+
     def make_bid(self, user, bid):
         if bid != "pas":
             if bid == "ktr" or bid == "rktr":
                 self.winning_bid = self.winning_bid + "X"
             else:
                 self.winning_bid = bid
+                if not self.declarer:
+                    self.trump = self.winning_bid[1]
+                    self.set_actual_declarer(user)
+                else:
+                    if self.winning_bid[1] != self.trump:
+                        self.set_actual_declarer(user)
+                    elif user not in self.declarer[1]:
+                        self.set_actual_declarer(user)
             if user in [0, 2]:
                 self.winning_side = [0, 2]
             else:
@@ -160,5 +185,6 @@ class Board:
             return True
         elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:
             self.status = "play"
+            self.set_lead()
             return True
         return False
