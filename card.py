@@ -63,8 +63,8 @@ S14 = pygame.image.load("images/deck/width 100/S14.png")
 class Card:
     def __init__(self, symbol):
         self.symbol = symbol
-        self.triumph = False
-        self.value = int(symbol[1:]) + 100 * self.triumph
+        self.trump = False
+        self.value = int(symbol[1:]) + 100 * self.trump
         self.hidden = True
         self.last_card = False
 

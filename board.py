@@ -33,8 +33,13 @@ class Board:
         self.available_bids = None
         self.special_bids = None
         self.declarer = None
+        self.dummy = None
+        self.dummy_visible = False
         self.trump = None
         self.lead = None
+        self.trick = [None, None, None, None]
+        self.tricks = [0, 0]
+        self.score = None
         self.set_vulnerable()
         self.set_dealer()
         self.shuffle()
@@ -49,6 +54,10 @@ class Board:
         self.south = [Card(symbol) for symbol in sorted(shuffle_deck[13:26], key=lambda x: (x[0], -int(x[1:])))]
         self.west = [Card(symbol) for symbol in sorted(shuffle_deck[26:39], key=lambda x: (x[0], -int(x[1:])))]
         self.east = [Card(symbol) for symbol in sorted(shuffle_deck[39:52], key=lambda x: (x[0], -int(x[1:])))]
+        self.north[-1].last_card = True
+        self.south[-1].last_card = True
+        self.west[-1].last_card = True
+        self.east[-1].last_card = True
 
     def set_vulnerable(self):
         if self.id % 16 == 2 or self.id % 16 == 5 or self.id % 16 == 12 or self.id % 16 == 15:
@@ -186,5 +195,40 @@ class Board:
         elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:
             self.status = "play"
             self.set_lead()
+            for player in self.declarer[1]:
+                if self.declarer[0] != player:
+                    self.dummy = player
+            self.turn = self.lead
+            if self.trump != "N":
+                self.setting_cards_value()
             return True
         return False
+
+    def setting_cards_value(self):
+        for hand in [self.south, self.north, self.east, self.west]:
+            for card in hand:
+                if card.symbol[0] == self.trump:
+                    card.trump = True
+
+    def make_move(self, card):
+        if self.turn == 0:
+            hand = self.south
+        elif self.turn == 1:
+            hand = self.west
+        elif self.turn == 2:
+            hand = self.north
+        else:
+            hand = self.east
+        for c in hand:
+            if c.symbol == card:
+                hand.remove(c)
+        hand[-1].last_card = True
+        self.trick[self.turn] = card
+        if all(card for card in self.trick):
+            self.tricks.append(self.trick)
+            self.turn = self.trick.index(max(self.trick))
+            self.lead = self.turn
+            self.trick = [None, None, None, None]
+        self.turn += 1
+        if self.turn > 3:
+            self.turn = 0

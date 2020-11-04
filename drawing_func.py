@@ -195,7 +195,8 @@ def redraw_bidding(win, font, font2, buttons, table, board, user, normal_bids, s
             win.blit(text, (round(x + rect[2] / 2 - text.get_width() / 2),
                             round(y + rect[3] / 2 - text.get_height() / 2)))
 
-    for i, seat in enumerate([(1, "W"), (2, "N"), (3, "E"), (0, "S")]):
+    seats_rotation = [(1, "W"), (2, "N"), (3, "E"), (0, "S"), (1, "W"), (2, "N"), (3, "E"), (0, "S")]
+    for i, seat in enumerate(seats_rotation[user.position:user.position + 4]):
         if board.vulnerable[seat[0]]:
             color_rect = (166, 20, 3)
             color_text = (255, 255, 255)
@@ -206,10 +207,10 @@ def redraw_bidding(win, font, font2, buttons, table, board, user, normal_bids, s
         pygame.draw.rect(win, color_rect, (round(win.get_width() / 2 + (i - 2) * 60), 310, 60, 38))
         win.blit(header_txt, (round(win.get_width() / 2 + (i - 1.5) * 60 - header_txt.get_width() / 2), round(310 + 19 - header_txt.get_height() / 2)))
     if not board.end_bidding():
-        if board.dealer == 0:
+        if board.dealer == user.position:
             board.bidding = [None, None, None] + board.bidding
         else:
-            board.bidding = [None] * (board.dealer - 1) + board.bidding
+            board.bidding = [None] * abs(board.dealer - 1 - user.position) + board.bidding
     for i, b in enumerate(board.bidding):
         if b:
             text = font.render(b.bid, 1, (0, 0, 0))
