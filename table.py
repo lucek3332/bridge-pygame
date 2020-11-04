@@ -4,7 +4,7 @@ from board import Board
 class Table:
     def __init__(self, table_id):
         self.id = table_id
-        self.players = [None, None, None, None]  # S, E, N, W
+        self.players = [None, None, None, None]  # S, W, N, E
         self.connected = [False, False, False, False]  # the same order as self.players
         self.board = None
         self.nr_boards = 0

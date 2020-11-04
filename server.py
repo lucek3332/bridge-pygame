@@ -168,6 +168,7 @@ def handle_connection(conn, addr):
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,
                                                       "board": t.board})
+
                 elif received_obj.get("command") == "score":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
@@ -176,6 +177,15 @@ def handle_connection(conn, addr):
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,
                                                       "board": t.board})
+
+                elif received_obj.get("command") == "make move":
+                    t = tables.get(received_obj.get("table nr"))
+                    if t:
+                        t.board.make_move(received_obj.get("card"))
+                        sending_bytes = pickle.dumps({"response": "ok",
+                                                      "table": t,
+                                                      "board": t.board})
+
                 if not t:
                     t = empty_tables.get(received_obj.get("table nr"))
                     if t.board:

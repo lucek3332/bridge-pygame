@@ -126,11 +126,11 @@ def draw_cards(win, font, table, board, user):
     if board.dealer == 0:
         dealer = "Dealer: S"
     elif board.dealer == 1:
-        dealer = "Dealer: E"
+        dealer = "Dealer: W"
     elif board.dealer == 2:
         dealer = "Dealer: N"
     else:
-        dealer = "Dealer: W"
+        dealer = "Dealer: E"
     dealer_text = font.render(dealer, 1, (0, 0, 0))
     vulnerable_text = font.render(board.vulnerable_txt, 1, (0, 0, 0))
     win.blit(dealer_text, (20, 10))
@@ -210,7 +210,14 @@ def redraw_bidding(win, font, font2, buttons, table, board, user, normal_bids, s
         if board.dealer == user.position:
             board.bidding = [None, None, None] + board.bidding
         else:
-            board.bidding = [None] * abs(board.dealer - 1 - user.position) + board.bidding
+            first_seat = user.position + 1
+            if first_seat > 3:
+                first_seat = 0
+            if first_seat != board.dealer:
+                if board.dealer - first_seat > 0:
+                    board.bidding = [None] * (board.dealer - first_seat) + board.bidding
+                else:
+                    board.bidding = [None] * (board.dealer - first_seat + 4) + board.bidding
     for i, b in enumerate(board.bidding):
         if b:
             text = font.render(b.bid, 1, (0, 0, 0))
@@ -243,6 +250,23 @@ def redraw_playing(win, font, font2, buttons, table, board, user):
             declarer_text = font.render("Rozgrywa: E", 1, (0, 0, 0))
     win.blit(contract_text, (920, 880))
     win.blit(declarer_text, (920, 920))
+    tricks_text = font.render(f"NS: {board.tricks[0]}  EW: {board.tricks[1]}", 1, (0, 0, 0))
+    win.blit(tricks_text, (920, 840))
+
+    for i, p in enumerate(table.players):
+        card = i
+        i -= user.position
+        if i < 0:
+            i += 4
+        if board.trick[card]:
+            if i == 0:
+                board.trick[card].draw(win, round(win.get_width() / 2 - 50), 600, True)
+            elif i == 2:
+                board.trick[card].draw(win, round(win.get_width() / 2 - 50), 330, True)
+            elif i == 1:
+                board.trick[card].draw(win, 400, round(win.get_height() / 2 - 153 / 2), True)
+            else:
+                board.trick[card].draw(win, 700, round(win.get_height() / 2 - 153 / 2), True)
 
     for btn in buttons:
         btn.draw(win)

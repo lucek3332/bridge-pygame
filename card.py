@@ -67,11 +67,19 @@ class Card:
         self.value = int(symbol[1:]) + 100 * self.trump
         self.hidden = True
         self.last_card = False
+        self.suited_with_lead = False
+        self.rect = None
 
     def __lt__(self, other):
         if self.value < other.value:
             return True
         return False
+
+    def set_value(self, lead_color):
+        if self.symbol[0] != lead_color and not self.trump:
+            self.value = 0
+        else:
+            self.value = int(self.symbol[1:]) + 100 * self.trump
 
     def draw(self, win, x, y, user):
         if user:
@@ -81,6 +89,17 @@ class Card:
                 win.blit(blue_back, (x, y))
             else:
                 win.blit(eval(self.symbol), (x, y))
+        if self.last_card:
+            self.rect = (x, y, 100, 153)
+        else:
+            self.rect = (x, y, 30, 153)
+
+    def click(self):
+        pos = pygame.mouse.get_pos()
+        if self.rect[0] < pos[0] < self.rect[0] + self.rect[2]:
+            if self.rect[1] < pos[1] < self.rect[1] + self.rect[3]:
+                return True
+        return False
 
     def __repr__(self):
         return f"Card {self.symbol}"

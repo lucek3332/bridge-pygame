@@ -218,6 +218,15 @@ def mainLoop():
 
             table = response.get("table")
             board = response.get("board")
+            if p.position == 0:
+                hand = board.south
+            elif p.position == 1:
+                hand = board.west
+            elif p.position == 2:
+                hand = board.north
+            else:
+                hand = board.east
+
             if not board.declarer:
                 redraw_score(screen, font, font2, buttons, table, board, p)
                 pygame.time.delay(2000)
@@ -241,6 +250,24 @@ def mainLoop():
                         p.position = None
                         status_game = "tables"
                         buttons = [create_table_btn]
+                    if p.position == board.turn:
+                        for card in hand:
+                            if card.click():
+                                if board.color_lead and any(c.symbol[0] == board.color_lead for c in hand):
+                                    if card.symbol[0] == board.color_lead:
+                                        pygame.time.delay(300)
+                                        response = p.send({"command": "make move",
+                                                           "user": p.username,
+                                                           "table nr": table.id,
+                                                           "card": card.symbol
+                                                           })
+                                else:
+                                    pygame.time.delay(300)
+                                    response = p.send({"command": "make move",
+                                                       "user": p.username,
+                                                       "table nr": table.id,
+                                                       "card": card.symbol
+                                                       })
 
 
 mainLoop()

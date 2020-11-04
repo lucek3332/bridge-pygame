@@ -37,6 +37,7 @@ class Board:
         self.dummy_visible = False
         self.trump = None
         self.lead = None
+        self.color_lead = None
         self.trick = [None, None, None, None]
         self.tricks = [0, 0]
         self.score = None
@@ -200,17 +201,21 @@ class Board:
                     self.dummy = player
             self.turn = self.lead
             if self.trump != "N":
-                self.setting_cards_value()
+                self.setting_trumps()
             return True
         return False
 
-    def setting_cards_value(self):
+    def setting_trumps(self):
         for hand in [self.south, self.north, self.east, self.west]:
             for card in hand:
                 if card.symbol[0] == self.trump:
                     card.trump = True
 
-    def make_move(self, card):
+    def make_move(self, card_symbol):
+        if all(t for t in self.trick):
+            self.history.append(self.trick)
+            self.trick = [None, None, None, None]
+        card = None
         if self.turn == 0:
             hand = self.south
         elif self.turn == 1:
@@ -220,15 +225,37 @@ class Board:
         else:
             hand = self.east
         for c in hand:
-            if c.symbol == card:
+            if c.symbol == card_symbol:
+                card = c
                 hand.remove(c)
         hand[-1].last_card = True
+        card.hidden = False
         self.trick[self.turn] = card
-        if all(card for card in self.trick):
-            self.tricks.append(self.trick)
-            self.turn = self.trick.index(max(self.trick))
-            self.lead = self.turn
-            self.trick = [None, None, None, None]
+        if self.lead:
+            self.color_lead = card_symbol[0]
+        self.lead = None
+        if not self.dummy_visible:
+            self.dummy_visible = True
+            if self.dummy == 0:
+                dummy_cards = self.south
+            elif self.dummy == 1:
+                dummy_cards = self.west
+            elif self.dummy == 2:
+                dummy_cards = self.north
+            else:
+                dummy_cards = self.east
+            for c in dummy_cards:
+                c.hidden = False
         self.turn += 1
         if self.turn > 3:
             self.turn = 0
+        if all(t for t in self.trick):
+            for t in self.trick:
+                t.set_value(self.color_lead)
+            self.turn = self.trick.index(max(self.trick))
+            if self.turn in [0, 2]:
+                self.tricks[0] += 1
+            else:
+                self.tricks[1] += 1
+            self.lead = self.turn
+            self.color_lead = None
