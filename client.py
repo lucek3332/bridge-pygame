@@ -250,24 +250,52 @@ def mainLoop():
                         p.position = None
                         status_game = "tables"
                         buttons = [create_table_btn]
-                    if p.position == board.turn:
-                        for card in hand:
-                            if card.click():
-                                if board.color_lead and any(c.symbol[0] == board.color_lead for c in hand):
-                                    if card.symbol[0] == board.color_lead:
+                    if p.position != board.dummy:
+                        if p.position == board.turn:
+                            for card in hand:
+                                if card.click():
+                                    if board.color_lead and any(c.symbol[0] == board.color_lead for c in hand):
+                                        if card.symbol[0] == board.color_lead:
+                                            pygame.time.delay(300)
+                                            response = p.send({"command": "make move",
+                                                               "user": p.username,
+                                                               "table nr": table.id,
+                                                               "card": card.symbol
+                                                               })
+                                    else:
                                         pygame.time.delay(300)
                                         response = p.send({"command": "make move",
                                                            "user": p.username,
                                                            "table nr": table.id,
                                                            "card": card.symbol
                                                            })
+                        elif p.position in board.declarer[1]:
+                            if board.dummy == board.turn:
+                                if board.dummy == 0:
+                                    dummy_hand = board.south
+                                elif board.dummy == 1:
+                                    dummy_hand = board.west
+                                elif board.dummy == 2:
+                                    dummy_hand = board.north
                                 else:
-                                    pygame.time.delay(300)
-                                    response = p.send({"command": "make move",
-                                                       "user": p.username,
-                                                       "table nr": table.id,
-                                                       "card": card.symbol
-                                                       })
+                                    dummy_hand = board.east
+                                for card in dummy_hand:
+                                    if card.click():
+                                        if board.color_lead and any(c.symbol[0] == board.color_lead for c in dummy_hand):
+                                            if card.symbol[0] == board.color_lead:
+                                                pygame.time.delay(300)
+                                                response = p.send({"command": "make move",
+                                                                   "user": p.username,
+                                                                   "table nr": table.id,
+                                                                   "card": card.symbol
+                                                                   })
+                                        else:
+                                            pygame.time.delay(300)
+                                            response = p.send({"command": "make move",
+                                                               "user": p.username,
+                                                               "table nr": table.id,
+                                                               "card": card.symbol
+                                                               })
 
 
 mainLoop()

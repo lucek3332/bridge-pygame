@@ -37,6 +37,7 @@ class Board:
         self.dummy_visible = False
         self.trump = None
         self.lead = None
+        self.first_lead = True
         self.color_lead = None
         self.trick = [None, None, None, None]
         self.tricks = [0, 0]
@@ -212,6 +213,7 @@ class Board:
                     card.trump = True
 
     def make_move(self, card_symbol):
+        self.first_lead = False
         if all(t for t in self.trick):
             self.history.append(self.trick)
             self.trick = [None, None, None, None]
@@ -228,10 +230,11 @@ class Board:
             if c.symbol == card_symbol:
                 card = c
                 hand.remove(c)
-        hand[-1].last_card = True
+        if len(hand) > 0:
+            hand[-1].last_card = True
         card.hidden = False
         self.trick[self.turn] = card
-        if self.lead:
+        if self.lead is not None:
             self.color_lead = card_symbol[0]
         self.lead = None
         if not self.dummy_visible:
@@ -259,3 +262,5 @@ class Board:
                 self.tricks[1] += 1
             self.lead = self.turn
             self.color_lead = None
+            if len(hand) == 0:
+                self.status = "score"

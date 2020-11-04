@@ -137,15 +137,15 @@ def draw_cards(win, font, table, board, user):
     win.blit(vulnerable_text, (20, 50))
 
     for i, p in enumerate(table.players):
-        if p:
-            if p[0] == user:
-                user_seat = i
-    for i, p in enumerate(table.players):
         is_my_hand = False
-        if p[0] == user:
+        if p[0] == user.username:
             is_my_hand = True
+
+        if board.dummy is not None and not board.first_lead:
+            if user.position in board.declarer[1] and i in board.declarer[1]:
+                is_my_hand = True
         hand = i
-        i -= user_seat
+        i -= user.position
         if i < 0:
             i += 4
         board.draw_hand(win, hand, i, is_my_hand)
@@ -157,7 +157,7 @@ def redraw_bidding(win, font, font2, buttons, table, board, user, normal_bids, s
     board_text = font.render(f"Rozdanie {board.id}", 1, (0, 0, 0))
     win.blit(table_text, (round(win.get_width() / 2 - table_text.get_width() / 2), 10))
     win.blit(board_text, (1000, 20))
-    draw_cards(win, font, table, board, user.username)
+    draw_cards(win, font, table, board, user)
     if board.turn == user.position:
         last_x = 0
         for i, bids in enumerate(normal_bids.items()):
@@ -235,16 +235,16 @@ def redraw_playing(win, font, font2, buttons, table, board, user):
     game_ready_text = font2.render("ROZGRYWKA", 1, (0, 0, 0))
     win.blit(game_ready_text, (round(win.get_width() / 2 - game_ready_text.get_width() / 2),
                                round(win.get_height() / 2 - game_ready_text.get_height() / 2)))
-    draw_cards(win, font, table, board, user.username)
+    draw_cards(win, font, table, board, user)
     if board.declarer[1] == [0, 2]:
         contract_text = font.render(f"Kontrakt {board.winning_bid} - NS", 1, (0, 0, 0))
-        if board.declarer == 0:
+        if board.declarer[0] == 0:
             declarer_text = font.render("Rozgrywa: S", 1, (0, 0, 0))
         else:
             declarer_text = font.render("Rozgrywa: N", 1, (0, 0, 0))
     else:
         contract_text = font.render(f"Kontrakt {board.winning_bid} - WE", 1, (0, 0, 0))
-        if board.declarer == 1:
+        if board.declarer[0] == 1:
             declarer_text = font.render("Rozgrywa: W", 1, (0, 0, 0))
         else:
             declarer_text = font.render("Rozgrywa: E", 1, (0, 0, 0))
