@@ -193,6 +193,7 @@ class Board:
     def end_bidding(self):
         if all(b.bid == "pas" for b in self.bidding[:4]) and len(self.bidding) == 4:
             self.status = "play"
+            self.score = 0
             return True
         elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:
             self.status = "play"
@@ -263,4 +264,89 @@ class Board:
             self.lead = self.turn
             self.color_lead = None
             if len(hand) == 0:
+                self.set_score()
                 self.status = "score"
+
+    def set_score(self):
+        level_contract = self.winning_bid[0] + 6
+        if self.declarer[1] == [0, 2]:
+            vul = self.vulnerable[0]
+            taken_tricks = self.tricks[0]
+        else:
+            vul = self.vulnerable[1]
+            taken_tricks = self.tricks[1]
+        score = taken_tricks - level_contract
+        doubled = False
+        redoubled = False
+        if self.winning_bid.endswith("X"):
+            if len(self.winning_bid) == 3:
+                doubled = True
+            else:
+                redoubled = True
+        making_game = False
+        making_slam = False
+        making_grand_slam = False
+        if level_contract == 7 and score == 0:
+            making_grand_slam = True
+        elif level_contract == 7 and score >= 0:
+            making_slam = True
+        if score >= 0:
+            if (self.trump == "C" or self.trump == "D") and level_contract >= 5:
+                making_game = True
+            elif (self.trump == "H" or self.trump == "S") and level_contract >= 4:
+                making_game = True
+            elif self.trump == "N" and level_contract >= 3:
+                making_game = True
+
+            if vul:
+                if making_game:
+                    self.score += 500
+                elif making_slam:
+                    self.score += 750
+                elif making_grand_slam:
+                    self.score += 1500
+                else:
+                    self.score += 50 * (doubled * 2 + redoubled * 2)
+            else:
+                if making_game:
+                    self.score += 300
+                elif making_slam:
+                    self.score += 500
+                elif making_grand_slam:
+                    self.score += 1000
+                else:
+                    self.score += 50 * (doubled * 2 + redoubled * 2)
+            if vul:
+                if self.trump == "C" or self.trump == "D":
+                    self.score += 100 + score * (20 + 180 * doubled + 200 * redoubled)
+                elif self.trump == "H" or self.trump == "S":
+                    self.score += 120 + score * (30 + 170 * doubled + 200 * redoubled)
+                elif self.trump == "N":
+                    self.score += 100 + score * (30 + 170 * doubled + 200 * redoubled)
+            else:
+                if self.trump == "C" or self.trump == "D":
+                    self.score += 100 + score * (20 + 80 * doubled + 100 * redoubled)
+                elif self.trump == "H" or self.trump == "S":
+                    self.score += 120 + score * (30 + 70 * doubled + 100 * redoubled)
+                elif self.trump == "N":
+                    self.score += 100 + score * (30 + 70 * doubled + 100 * redoubled)
+        elif score == -1:
+            if vul:
+                self.score -= 100 + 100 * doubled + 200 * redoubled
+            else:
+                self.score -= 50 + 50 * doubled + 100 * redoubled
+        elif score == -2:
+            if vul:
+                self.score -= 200 + 300 * doubled + 500 * redoubled
+            else:
+                self.score -= 100 + 200 * doubled + 300 * redoubled
+        elif score == -3:
+            if vul:
+                self.score -= 300 + 500 * doubled + 800 * redoubled
+            else:
+                self.score -= 150 + 350 * doubled + 500 * redoubled
+        else:
+            if vul:
+                self.score -= 300 + 500 * doubled + 800 * redoubled + abs(score) * (100 + 200 * doubled + 300 * redoubled)
+            else:
+                self.score -= 150 + 350 * doubled + 500 * redoubled + abs(score) * (50 + 250 * doubled + 300 * redoubled)
