@@ -236,6 +236,15 @@ def mainLoop():
                                    "table nr": table.id
                                    })
                 continue
+            if board.score:
+                pygame.time.delay(500)
+                redraw_score(screen, font, font2, buttons, table, board, p)
+                pygame.time.delay(4000)
+                status_game = "waiting at table"
+                response = p.send({"command": "score",
+                                   "user": p.username,
+                                   "table nr": table.id
+                                   })
             redraw_playing(screen, font, font2, buttons, table, board, p)
 
             for event in pygame.event.get():

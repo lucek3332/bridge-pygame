@@ -280,7 +280,10 @@ def redraw_score(win, font, font2, buttons, table, board, user):
     if not board.declarer:
         score_text = font2.render("ROZDANIE PRZEPASOWANE", 1, (0, 0, 0))
     else:
-        score_text = font2.render("WYNIK", 1, (0, 0, 0))
+        if board.declarer[1] == [0, 2]:
+            score_text = font2.render(f"NS {board.result} {board.score}", 1, (0, 0, 0), 1)
+        else:
+            score_text = font2.render(f"EW {board.result} {board.score}", 1, (0, 0, 0), 1)
     win.blit(score_text, (round(win.get_width() / 2 - score_text.get_width() / 2),
                           round(win.get_height() / 2 - score_text.get_height() / 2)))
     pygame.display.update()

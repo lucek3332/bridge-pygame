@@ -41,7 +41,8 @@ class Board:
         self.color_lead = None
         self.trick = [None, None, None, None]
         self.tricks = [0, 0]
-        self.score = None
+        self.score = 0
+        self.result = None
         self.set_vulnerable()
         self.set_dealer()
         self.shuffle()
@@ -193,7 +194,6 @@ class Board:
     def end_bidding(self):
         if all(b.bid == "pas" for b in self.bidding[:4]) and len(self.bidding) == 4:
             self.status = "play"
-            self.score = 0
             return True
         elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:
             self.status = "play"
@@ -268,7 +268,7 @@ class Board:
                 self.status = "score"
 
     def set_score(self):
-        level_contract = self.winning_bid[0] + 6
+        level_contract = int(self.winning_bid[0]) + 6
         if self.declarer[1] == [0, 2]:
             vul = self.vulnerable[0]
             taken_tricks = self.tricks[0]
@@ -276,6 +276,12 @@ class Board:
             vul = self.vulnerable[1]
             taken_tricks = self.tricks[1]
         score = taken_tricks - level_contract
+        if score == 0:
+            self.result = self.winning_bid + "=="
+        elif score > 0:
+            self.result = self.winning_bid + f"+{score}"
+        else:
+            self.result = self.winning_bid + f"{score}"
         doubled = False
         redoubled = False
         if self.winning_bid.endswith("X"):
@@ -318,11 +324,11 @@ class Board:
                     self.score += 50 * (doubled * 2 + redoubled * 2)
             if vul:
                 if self.trump == "C" or self.trump == "D":
-                    self.score += 100 + score * (20 + 180 * doubled + 200 * redoubled)
+                    self.score += level_contract * 20 + score * (20 + 180 * doubled + 200 * redoubled)
                 elif self.trump == "H" or self.trump == "S":
-                    self.score += 120 + score * (30 + 170 * doubled + 200 * redoubled)
+                    self.score += level_contract * 30 + score * (30 + 170 * doubled + 200 * redoubled)
                 elif self.trump == "N":
-                    self.score += 100 + score * (30 + 170 * doubled + 200 * redoubled)
+                    self.score += 40 + (level_contract - 1) * 30 + score * (30 + 170 * doubled + 200 * redoubled)
             else:
                 if self.trump == "C" or self.trump == "D":
                     self.score += 100 + score * (20 + 80 * doubled + 100 * redoubled)
@@ -347,6 +353,6 @@ class Board:
                 self.score -= 150 + 350 * doubled + 500 * redoubled
         else:
             if vul:
-                self.score -= 300 + 500 * doubled + 800 * redoubled + abs(score) * (100 + 200 * doubled + 300 * redoubled)
+                self.score -= 300 + 500 * doubled + 800 * redoubled + abs(score + 3) * (100 + 200 * doubled + 300 * redoubled)
             else:
-                self.score -= 150 + 350 * doubled + 500 * redoubled + abs(score) * (50 + 250 * doubled + 300 * redoubled)
+                self.score -= 150 + 350 * doubled + 500 * redoubled + abs(score + 3) * (50 + 250 * doubled + 300 * redoubled)
