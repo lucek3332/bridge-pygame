@@ -8,6 +8,9 @@ pygame.init()
 # Images
 icon = pygame.image.load("images/icon.png")
 
+# Sounds
+card_sound = pygame.mixer.Sound()
+
 # Screen settings
 screenWidth = 1200
 screenHeight = 1000
@@ -265,14 +268,16 @@ def mainLoop():
                                 if card.click():
                                     if board.color_lead and any(c.symbol[0] == board.color_lead for c in hand):
                                         if card.symbol[0] == board.color_lead:
-                                            pygame.time.delay(300)
+                                            pygame.time.delay(200)
+                                            card_sound.play()
                                             response = p.send({"command": "make move",
                                                                "user": p.username,
                                                                "table nr": table.id,
                                                                "card": card.symbol
                                                                })
                                     else:
-                                        pygame.time.delay(300)
+                                        pygame.time.delay(200)
+                                        card_sound.play()
                                         response = p.send({"command": "make move",
                                                            "user": p.username,
                                                            "table nr": table.id,
@@ -292,14 +297,16 @@ def mainLoop():
                                     if card.click():
                                         if board.color_lead and any(c.symbol[0] == board.color_lead for c in dummy_hand):
                                             if card.symbol[0] == board.color_lead:
-                                                pygame.time.delay(300)
+                                                pygame.time.delay(200)
+                                                card_sound.play()
                                                 response = p.send({"command": "make move",
                                                                    "user": p.username,
                                                                    "table nr": table.id,
                                                                    "card": card.symbol
                                                                    })
                                         else:
-                                            pygame.time.delay(300)
+                                            pygame.time.delay(200)
+                                            card_sound.play()
                                             response = p.send({"command": "make move",
                                                                "user": p.username,
                                                                "table nr": table.id,
