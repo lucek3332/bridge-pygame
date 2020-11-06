@@ -4,6 +4,11 @@ from bid import Bid, BidButton, BidButtonSuit, SpecialBid
 
 
 class Board:
+    """
+    Class for handling board.
+    """
+
+    # Class attributes
     deck = ["".join([suit, str(honour)]) for suit in "CDHS" for honour in range(2, 15)]
     bids = ["1C", "1D", "1H", "1S", "1N",
             "2C", "2D", "2H", "2S", "2N",
@@ -51,6 +56,10 @@ class Board:
         return f"Board nr {self.id}"
 
     def shuffle(self):
+        """
+        Shuffling hands during initializing class instance. Marking last cards in hands.
+        :return: None
+        """
         shuffle_deck = self.deck
         random.shuffle(shuffle_deck)
         self.north = [Card(symbol) for symbol in sorted(shuffle_deck[:13], key=lambda x: (x[0], -int(x[1:])))]
@@ -63,6 +72,10 @@ class Board:
         self.east[-1].last_card = True
 
     def set_vulnerable(self):
+        """
+        Setting board condition according to board ID.
+        :return: None
+        """
         if self.id % 16 == 2 or self.id % 16 == 5 or self.id % 16 == 12 or self.id % 16 == 15:
             self.vulnerable = [True, False, True, False]
             self.vulnerable_txt = "NS po"
@@ -77,6 +90,10 @@ class Board:
             self.vulnerable_txt = "Wszyscy przed"
 
     def set_dealer(self):
+        """
+        Setting dealer and turn to specific player according to board ID during initializing class instance.
+        :return: None
+        """
         if self.id % 4 == 1:
             self.dealer = 2
         elif self.id % 4 == 2:
@@ -86,9 +103,20 @@ class Board:
         else:
             self.dealer = 1
         self.turn = self.dealer
+        # Getting starting bids
         self.available_bids, self.special_bids = self.get_available_bids()
 
     def draw_hand(self, win, hand, seat, user=False):
+        """
+        Dynamic drawing cards in the hand.
+        :param win: pygame Surface instance
+        :param hand: int
+        :param seat: int
+        :param user: boolean
+        :return: None
+        """
+
+        # Assignation the hand to draw
         if hand == 0:
             drawing_hand = self.south
         elif hand == 1:
@@ -98,10 +126,12 @@ class Board:
         else:
             drawing_hand = self.east
 
+        # Entire size of the hand
         width = (len(drawing_hand) - 1) * 30 + 100
         height = (len(drawing_hand) - 1) * 30 + 100
         vertical = False
 
+        # Coordinates for drawing according to taken seat
         if seat == 0:
             x = round(win.get_width() / 2 - width / 2)
             y = 790
@@ -117,6 +147,7 @@ class Board:
             y = round(win.get_height() / 2 - height / 2)
             vertical = True
 
+        # Iterating over cards in hand and drawing them sequentially with slight shift
         for card in drawing_hand:
             card.draw(win, x, y, user)
             if vertical:
@@ -125,39 +156,60 @@ class Board:
                 x += 30
 
     def set_actual_declarer(self, user):
+        """
+        Setting the declarer in current stage of bidding.
+        :param user: int
+        :return: None
+        """
         if user in [0, 2]:
             self.declarer = (user, [0, 2], self.trump)
         else:
             self.declarer = (user, [1, 3], self.trump)
 
     def set_lead(self):
+        """
+        Setting the lead to player next to the declarer.
+        :return: None
+        """
         self.lead = self.declarer[0] + 1
         if self.lead > 3:
             self.lead = 0
 
     def make_bid(self, user, bid):
+        """
+        Making a call with specific bid. Updating turn and bidding history.
+        :param user: int
+        :param bid: string
+        :return: None
+        """
         if bid != "pas":
             if bid == "ktr" or bid == "rktr":
                 self.winning_bid = self.winning_bid + "X"
             else:
                 self.winning_bid = bid
+                # Setting the declarer for first time
                 if not self.declarer:
                     self.trump = self.winning_bid[1]
                     self.set_actual_declarer(user)
                 else:
+                    # Setting the declarer, when new suit has been appeared
                     if self.winning_bid[1] != self.trump:
                         self.set_actual_declarer(user)
+                    # Setting the declarer, when the other side bids
                     elif user not in self.declarer[1]:
                         self.set_actual_declarer(user)
             if user in [0, 2]:
                 self.winning_side = [0, 2]
             else:
                 self.winning_side = [1, 3]
+        # Updating turn
         self.turn += 1
         if self.turn > 3:
             self.turn = 0
+        # Updating bidding history and getting available bids for next turn
         self.bidding.append(Bid(bid))
         self.available_bids, self.special_bids = self.get_available_bids()
+        # Checking that bidding phase is over
         if self.end_bidding():
             if self.dealer == 0:
                 self.bidding = [None, None, None] + self.bidding
@@ -165,26 +217,37 @@ class Board:
                 self.bidding = [None] * (self.dealer - 1) + self.bidding
 
     def get_available_bids(self):
+        """
+        Getting available bids for current turn.
+        :return: tuple
+        """
         special_bids = ["pas"]
         if self.winning_bid:
             indx = self.bids.index(self.winning_bid[:2])
             if self.turn not in self.winning_side:
+                # Adding redouble to special bids, when opponents called double
                 if self.winning_bid[-1] == "X" and len(self.winning_bid) == 3:
                     special_bids = special_bids + ["rktr"]
                 elif self.winning_bid[-1] == "X" and len(self.winning_bid) == 4:
                     pass
+                # Adding double to special bids, when opponents called any bid (exclude double)
                 else:
                     special_bids = special_bids + ["ktr"]
+            # Getting higher bids than already has been bid
             available_bids = self.bids[indx + 1:]
         else:
+            # No one bids, getting all bids
             available_bids = self.bids
+        # Creating dictionary of available bids, level bids are keys, list of appropriate denomination bids are values
         available_bids_dictio = dict()
         for b in available_bids:
             if available_bids_dictio.get(b[0]):
                 available_bids_dictio[b[0]].append(b[1])
             else:
                 available_bids_dictio[b[0]] = [b[1]]
+        # List of special bids with initialized instances of SpecialBid class
         special_bids = [SpecialBid(b) for b in special_bids]
+        # List of availabl bids with initialized instances of BidButton and BidButtonSuit classes
         normal_bids = dict()
         for k, values in available_bids_dictio.items():
             new_key = BidButton(k)
@@ -192,11 +255,18 @@ class Board:
         return normal_bids, special_bids
 
     def end_bidding(self):
+        """
+        Checking that bidding phase is over.
+        :return: boolean
+        """
+        # Auction begins with four consecutive passes
         if all(b.bid == "pas" for b in self.bidding[:4]) and len(self.bidding) == 4:
             self.status = "play"
             return True
+        # Three consecutive passes following a bid, double or redouble
         elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:
             self.status = "play"
+            # Setting the lead, the trump and the dummy
             self.set_lead()
             for player in self.declarer[1]:
                 if self.declarer[0] != player:
@@ -208,16 +278,29 @@ class Board:
         return False
 
     def setting_trumps(self):
+        """
+        Marking cards, which have the same suit as trump
+        :return: None
+        """
         for hand in [self.south, self.north, self.east, self.west]:
             for card in hand:
                 if card.symbol[0] == self.trump:
                     card.trump = True
 
     def make_move(self, card_symbol):
+        """
+        Adding the played card to the trick. Removing this card from the hand.
+        Assignation who takes trick, when all players played card.
+        Updating the turn, the lead, tricks history and amount of tricks each side.
+        :param card_symbol: string
+        :return: None
+        """
         self.first_lead = False
+        # All players added card to trick, reset trick and appending tricks history
         if all(t for t in self.trick):
             self.history.append(self.trick)
             self.trick = [None, None, None, None]
+        # Assignation current hand
         card = None
         if self.turn == 0:
             hand = self.south
@@ -227,17 +310,22 @@ class Board:
             hand = self.north
         else:
             hand = self.east
+        # Removing the played card from the hand
         for c in hand:
             if c.symbol == card_symbol:
                 card = c
                 hand.remove(c)
         if len(hand) > 0:
             hand[-1].last_card = True
+        # Card is visible for everyone
         card.hidden = False
+        # Adding card to the trick
         self.trick[self.turn] = card
+        # Setting the suit that others must play if able to do so
         if self.lead is not None:
             self.color_lead = card_symbol[0]
         self.lead = None
+        # Setting dummy's hand as visible after first lead
         if not self.dummy_visible:
             self.dummy_visible = True
             if self.dummy == 0:
@@ -250,12 +338,16 @@ class Board:
                 dummy_cards = self.east
             for c in dummy_cards:
                 c.hidden = False
+        # Updating turn
         self.turn += 1
         if self.turn > 3:
             self.turn = 0
+        # Four cards in the trick
         if all(t for t in self.trick):
+            # Updating values of cards in trick
             for t in self.trick:
                 t.set_value(self.color_lead)
+            # Who collects the trick
             self.turn = self.trick.index(max(self.trick))
             if self.turn in [0, 2]:
                 self.tricks[0] += 1
@@ -263,19 +355,28 @@ class Board:
                 self.tricks[1] += 1
             self.lead = self.turn
             self.color_lead = None
+            # Ending the board, when any card hasn't left
             if len(hand) == 0:
                 self.set_score()
                 self.status = "score"
 
     def set_score(self):
+        """
+        Calculating final score depending on the board condition, tricks result and played contract.
+        :return: None
+        """
+        # Tricks that should be taken
         level_contract = int(self.winning_bid[0]) + 6
+        # Tricks taken
         if self.declarer[1] == [0, 2]:
             vul = self.vulnerable[0]
             taken_tricks = self.tricks[0]
         else:
             vul = self.vulnerable[1]
             taken_tricks = self.tricks[1]
+        # Final result
         score = taken_tricks - level_contract
+        # Updating attribute for displaying final result
         if score == 0:
             self.result = self.winning_bid + "=="
         elif score > 0:
@@ -284,6 +385,7 @@ class Board:
             self.result = self.winning_bid + f"{score}"
         doubled = False
         redoubled = False
+        # Determine if game was doubled or redoubled
         if self.winning_bid.endswith("X"):
             if len(self.winning_bid) == 3:
                 doubled = True
@@ -292,6 +394,7 @@ class Board:
         making_game = False
         making_slam = False
         making_grand_slam = False
+        # Eventual bonus for game, slam and grand slam
         if level_contract == 7 and score == 0:
             making_grand_slam = True
         elif level_contract == 7 and score >= 0:
@@ -303,7 +406,7 @@ class Board:
                 making_game = True
             elif self.trump == "N" and level_contract >= 3:
                 making_game = True
-
+            # Adding bonus points for game, slam or grand slam to the score
             if vul:
                 if making_game:
                     self.score += 500
@@ -322,6 +425,7 @@ class Board:
                     self.score += 1000
                 else:
                     self.score += 50 * (doubled * 2 + redoubled * 2)
+            # Adding points for tricks and overtricks to the score
             if vul:
                 if self.trump == "C" or self.trump == "D":
                     self.score += level_contract * 20 + score * (20 + 180 * doubled + 200 * redoubled)
@@ -336,21 +440,25 @@ class Board:
                     self.score += 120 + score * (30 + 70 * doubled + 100 * redoubled)
                 elif self.trump == "N":
                     self.score += 100 + score * (30 + 70 * doubled + 100 * redoubled)
+        # Subtracting points for 1 undertrick
         elif score == -1:
             if vul:
                 self.score -= 100 + 100 * doubled + 200 * redoubled
             else:
                 self.score -= 50 + 50 * doubled + 100 * redoubled
+        # Subtracting points for 2 undertricks
         elif score == -2:
             if vul:
                 self.score -= 200 + 300 * doubled + 500 * redoubled
             else:
                 self.score -= 100 + 200 * doubled + 300 * redoubled
+        # Subtracting points for 3 undertricks
         elif score == -3:
             if vul:
                 self.score -= 300 + 500 * doubled + 800 * redoubled
             else:
                 self.score -= 150 + 350 * doubled + 500 * redoubled
+        # Subtracting points for 4 undertricks or more
         else:
             if vul:
                 self.score -= 300 + 500 * doubled + 800 * redoubled + abs(score + 3) * (100 + 200 * doubled + 300 * redoubled)
