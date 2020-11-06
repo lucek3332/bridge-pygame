@@ -17,6 +17,7 @@ tables = {}
 empty_tables = {}
 tableID = 1
 
+# Running server socket, binding and listening
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(SERVER_ADDR)
 server_socket.listen()
@@ -24,11 +25,19 @@ print("[STARTED]: Server is running, waiting for connections")
 
 
 def handle_connection(conn, addr):
+    """
+    Thread for handling connection.
+    :param conn: socket
+    :param addr: tuple
+    :return: None
+    """
     run = True
     global countingPlayer, empty_tables, tableID
+    # Sending welcome message
     conn.send(bytes(f"{addr} connected to the server.", "utf-8"))
     while run:
         try:
+            # Receiving object from server with fixed length header
             received = b""
             new_msg = True
             while True:
@@ -49,13 +58,16 @@ def handle_connection(conn, addr):
 
             received_obj = pickle.loads(received)
 
+            # Response, when user waits in lobby
             if received_obj.get("command") == "waiting in lobby":
 
+                # User with the same username and another IP can't enter to lobby
                 if received_obj.get("user") in users and users.get(received_obj.get("user")) != addr:
                     sending_bytes = pickle.dumps({"response": "user exist",
                                                   "empty_tables": empty_tables,
                                                   "count_players": countingPlayer})
 
+                # Adding new user to server users dictionary
                 elif received_obj.get("user") not in users:
                     users[received_obj.get("user")] = addr
                     print(f"[USER ONLINE] The user {received_obj.get('user')} is currently online.")
@@ -63,11 +75,13 @@ def handle_connection(conn, addr):
                                                   "empty_tables": empty_tables,
                                                   "count_players": countingPlayer})
 
+                # Sending amount of online players and dictionary of empty tables
                 else:
                     sending_bytes = pickle.dumps({"response": "ok",
                                                   "empty_tables": empty_tables,
                                                   "count_players": countingPlayer})
 
+            # Creating new table, user takes automatically S position, adding table to empty_tables dictionary
             elif received_obj.get("command") == "create table":
                 t = Table(tableID)
                 t.set_player(0, received_obj.get("user"), addr)
@@ -75,16 +89,19 @@ def handle_connection(conn, addr):
                 empty_tables[tableID] = t
                 print(f"[CREATE TABLE] The table nr {tableID} has been created.")
                 tableID += 1
+                # Sending additionally the table
                 sending_bytes = pickle.dumps({"response": "ok",
                                               "empty_tables": empty_tables,
                                               "count_players": countingPlayer,
                                               "table": t})
 
+            # Taking specific seat on the table
             elif received_obj.get('command') == "take seat":
                 t = empty_tables.get(received_obj.get('table nr'))
                 seat = received_obj.get("seat")
                 t.set_player(seat, received_obj.get("user"), addr)
                 t.set_connected(seat)
+                # Moving table from empty_tables to tables dictionary, when the table is full
                 if t.is_full():
                     tables[t.id] = t
                     del empty_tables[t.id]
@@ -94,13 +111,16 @@ def handle_connection(conn, addr):
                                               "count_players": countingPlayer,
                                               "table": t})
 
+            # Response, when user waits at the table
             elif received_obj.get("command") == "waiting at table":
+                # Searching for the table in empty_table dictionary, then in tables dictionary if necessary
                 t = empty_tables.get(received_obj.get("table nr"))
                 if t is None:
                     t = tables.get(received_obj.get("table nr"))
                 sending_bytes = pickle.dumps({"response": "ok",
                                               "table": t})
 
+            # Leaving the table
             elif received_obj.get("command") == "stand":
                 t = empty_tables.get(received_obj.get("table nr"))
                 if t:
@@ -108,16 +128,19 @@ def handle_connection(conn, addr):
                         if (received_obj.get("user"), addr) == p:
                             t.remove_player(indx)
                             t.set_disconnected(indx)
+                            # If last player has left table, the table is closing
                             if sum(1 if p else 0 for p in t.players) == 0:
                                 del empty_tables[received_obj.get("table nr")]
                                 print(f"[DELETE TABLE] The table nr {received_obj.get('table nr')} has been deleted.")
                 else:
+                    # Player is leaving full table
                     t = tables.get(received_obj.get("table nr"))
                     for indx, p in enumerate(t.players):
                         if (received_obj.get("user"), addr) == p:
                             t.remove_player(indx)
                             t.set_disconnected(indx)
                             t.empty = True
+                            # Moving the table from tables dictionary to empty_tables dictionary
                             empty_tables[received_obj.get("table nr")] = t
                             del tables[received_obj.get("table nr")]
 
@@ -125,8 +148,10 @@ def handle_connection(conn, addr):
                                               "empty_tables": empty_tables,
                                               "count_players": countingPlayer})
 
+            # Dealing new board
             elif received_obj.get("command") == "shuffle":
                 t = tables.get(received_obj.get("table nr"))
+                # Shuffling once for four requests
                 if not t.board and t.queue % 4 == 0:
                     t.next_board()
                 t.set_queue()
@@ -135,6 +160,8 @@ def handle_connection(conn, addr):
                                               "board": t.board})
             else:
                 t = None
+
+                # Bidding phase
                 if received_obj.get("command") == "bidding":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
@@ -142,9 +169,11 @@ def handle_connection(conn, addr):
                                                       "table": t,
                                                       "board": t.board})
 
+                # Click on the level bid
                 elif received_obj.get("command") == "click number":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
+                        # Making appropriate denomination bids visible
                         for bid in t.board.available_bids:
                             if received_obj.get("bid").bid == bid.bid:
                                 bid.active = True
@@ -154,6 +183,7 @@ def handle_connection(conn, addr):
                                                       "table": t,
                                                       "board": t.board})
 
+                # Calling specific bid
                 elif received_obj.get("command") == "make bid":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
@@ -161,23 +191,25 @@ def handle_connection(conn, addr):
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,
                                                       "board": t.board})
-
+                # Playing phase
                 elif received_obj.get("command") == "playing":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,
                                                       "board": t.board})
-
+                # Score phase
                 elif received_obj.get("command") == "score":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
+                        # Reset board once for four requests
                         if t.board and t.queue % 4 == 0:
                             t.board = None
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,
                                                       "board": t.board})
 
+                # Playing specific card
                 elif received_obj.get("command") == "make move":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
@@ -186,6 +218,7 @@ def handle_connection(conn, addr):
                                                       "table": t,
                                                       "board": t.board})
 
+                # Moving table to empty_tables dictionary, when player has left the table
                 if not t:
                     t = empty_tables.get(received_obj.get("table nr"))
                     if t.board:
@@ -194,6 +227,7 @@ def handle_connection(conn, addr):
                                                   "table": t,
                                                   "board": t.board})
 
+            # Sending objects with fixed length header
             sending_header = f"{len(sending_bytes):<{HEADER_SIZE}}"
             sending_data = bytes(sending_header, "utf-8") + sending_bytes
             conn.send(sending_data)
@@ -245,6 +279,7 @@ def handle_connection(conn, addr):
         del tables[table_to_delete]
 
 
+# Waiting for client connections
 while True:
     conn, addr = server_socket.accept()
     print(f"[CONNECTED]: The connection has been established from {addr[0]}, {addr[1]}")
