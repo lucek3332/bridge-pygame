@@ -5,22 +5,22 @@ pygame.init()
 
 
 class Bid:
-    # font = pygame.font.SysFont("Arial", 20)
+    """
+    Class for handling bids displayed in the bidding table.
+    """
 
     def __init__(self, bid):
         self.bid = bid
-        # self.text = self.font.render(bid, 1, (0, 0, 0))
         self.rect = None
-
-    """def draw(self, win, x, y):
-        win.blit(self.text, (x, y))
-        self.rect = (x, y, 20, 20)"""
 
     def __repr__(self):
         return f"Bid: {self.bid}"
 
 
 class BidButton:
+    """
+    Class for handling level bids.
+    """
 
     def __init__(self, bid):
         self.bid = bid
@@ -28,6 +28,10 @@ class BidButton:
         self.rect = None
 
     def click(self):
+        """
+        Checking that specific level bid is clicked.
+        :return: boolean
+        """
         pos = pygame.mouse.get_pos()
         if self.rect[0] < pos[0] < self.rect[0] + self.rect[2]:
             if self.rect[1] < pos[1] < self.rect[1] + self.rect[3]:
@@ -35,6 +39,10 @@ class BidButton:
         return False
 
     def deactivate(self):
+        """
+        When the other level bid is clicked, setting 'active' attribute of this level bid to False.
+        :return: None
+        """
         self.active = False
 
     def __repr__(self):
@@ -42,6 +50,10 @@ class BidButton:
 
 
 class BidButtonSuit:
+    """
+    Class for handling denomination bids.
+    """
+
     def __init__(self, bid, first_button):
         self.bid = bid
         self.first_part_bid = first_button
@@ -49,6 +61,10 @@ class BidButtonSuit:
         self.bidded = False
 
     def click(self):
+        """
+        Checking that the denomination bid is clicked.
+        :return: boolean
+        """
         pos = pygame.mouse.get_pos()
         if self.rect[0] < pos[0] < self.rect[0] + self.rect[2]:
             if self.rect[1] < pos[1] < self.rect[1] + self.rect[3]:
@@ -61,6 +77,9 @@ class BidButtonSuit:
 
 
 class SpecialBid:
+    """
+    Class for handling special bids like fold and double/redouble.
+    """
 
     def __init__(self, bid):
         self.bid = bid
@@ -74,6 +93,10 @@ class SpecialBid:
             self.text = 'P'
 
     def click(self):
+        """
+        Checking that the special bid is clicked.
+        :return: boolean
+        """
         pos = pygame.mouse.get_pos()
         if self.rect[0] < pos[0] < self.rect[0] + self.rect[2]:
             if self.rect[1] < pos[1] < self.rect[1] + self.rect[3]:

@@ -61,6 +61,10 @@ S14 = pygame.image.load("images/deck/width 100/S14.png")
 
 
 class Card:
+    """
+    Class for handling single card.
+    """
+
     def __init__(self, symbol):
         self.symbol = symbol
         self.trump = False
@@ -71,17 +75,35 @@ class Card:
         self.rect = None
 
     def __lt__(self, other):
+        """
+        Comparing two different cards based on their value.
+        :param other: Card instance
+        :return: boolean
+        """
         if self.value < other.value:
             return True
         return False
 
     def set_value(self, lead_color):
+        """
+        Updating value of card depends on the suit of card and the suit of the lead.
+        :param lead_color: string
+        :return: None
+        """
         if self.symbol[0] != lead_color and not self.trump:
             self.value = 0
         else:
             self.value = int(self.symbol[1:]) + 100 * self.trump
 
     def draw(self, win, x, y, user):
+        """
+        Drawing card and setting up rect attribute.
+        :param win: pygame Surface instance
+        :param x: int
+        :param y: int
+        :param user: boolean
+        :return: None
+        """
         if user:
             win.blit(eval(self.symbol), (x, y))
         else:
@@ -95,6 +117,10 @@ class Card:
             self.rect = (x, y, 30, 153)
 
     def click(self):
+        """
+        Checking that card is clicked or not
+        :return: boolean
+        """
         pos = pygame.mouse.get_pos()
         if self.rect[0] < pos[0] < self.rect[0] + self.rect[2]:
             if self.rect[1] < pos[1] < self.rect[1] + self.rect[3]:
