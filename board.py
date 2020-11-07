@@ -38,6 +38,11 @@ class Board:
         self.available_bids = None
         self.special_bids = None
         self.declarer = None
+        self.first_call_suit = {"C": {"0": None, "1": None},
+                                "D": {"0": None, "1": None},
+                                "H": {"0": None, "1": None},
+                                "S": {"0": None, "1": None},
+                                "N": {"0": None, "1": None}}
         self.dummy = None
         self.dummy_visible = False
         self.trump = None
@@ -162,8 +167,10 @@ class Board:
         :return: None
         """
         if user in [0, 2]:
+            self.first_call_suit[self.trump]["0"] = user
             self.declarer = (user, [0, 2], self.trump)
         else:
+            self.first_call_suit[self.trump]["1"] = user
             self.declarer = (user, [1, 3], self.trump)
 
     def set_lead(self):
@@ -187,16 +194,15 @@ class Board:
                 self.winning_bid = self.winning_bid + "X"
             else:
                 self.winning_bid = bid
-                # Setting the declarer for first time
-                if not self.declarer:
-                    self.trump = self.winning_bid[1]
-                    self.set_actual_declarer(user)
-                else:
-                    # Setting the declarer, when new suit has been appeared
-                    if self.winning_bid[1] != self.trump:
+                # Setting trump suit
+                self.trump = self.winning_bid[1]
+                if user in [0, 2]:
+                    # Calling first time specific suit by NS side
+                    if self.first_call_suit.get(self.trump).get("0") is None:
                         self.set_actual_declarer(user)
-                    # Setting the declarer, when the other side bids
-                    elif user not in self.declarer[1]:
+                else:
+                    # Calling first time specific suit by EW side
+                    if self.first_call_suit.get(self.trump).get("1") is None:
                         self.set_actual_declarer(user)
             if user in [0, 2]:
                 self.winning_side = [0, 2]

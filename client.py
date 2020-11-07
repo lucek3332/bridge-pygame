@@ -9,7 +9,7 @@ pygame.init()
 icon = pygame.image.load("images/icon.png")
 
 # Sounds
-card_sound = pygame.mixer.Sound()
+card_sound = pygame.mixer.Sound("sounds/card.wav")
 
 # Screen settings
 screenWidth = 1200
