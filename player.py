@@ -3,7 +3,7 @@ import pickle
 
 
 # Global constants
-SERVER_IP = "192.168.0.220"
+SERVER_IP = "34.105.199.145"  # 192.168.0.220 for local
 SERVER_PORT = 5555
 SERVER_ADDR = (SERVER_IP, SERVER_PORT)
 HEADER_SIZE = 30

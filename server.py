@@ -4,7 +4,8 @@ from _thread import start_new_thread
 from table import Table
 
 # Global constants
-SERVER_IP = socket.gethostbyname(socket.gethostname())
+# SERVER_IP = socket.gethostbyname(socket.gethostname()) - for local
+SERVER_IP = ""
 SERVER_PORT = 5555
 SERVER_ADDR = (SERVER_IP, SERVER_PORT)
 HEADER_SIZE = 30
