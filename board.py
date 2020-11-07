@@ -200,10 +200,17 @@ class Board:
                     # Calling first time specific suit by NS side
                     if self.first_call_suit.get(self.trump).get("0") is None:
                         self.set_actual_declarer(user)
+                    # Taking player, who first bid this suit, as declarer
+                    else:
+                        self.set_actual_declarer(self.first_call_suit.get(self.trump).get("0"))
                 else:
                     # Calling first time specific suit by EW side
                     if self.first_call_suit.get(self.trump).get("1") is None:
                         self.set_actual_declarer(user)
+                    # Taking player, who first bid this suit, as declarer
+                    else:
+                        self.set_actual_declarer(self.first_call_suit.get(self.trump).get("1"))
+
             if user in [0, 2]:
                 self.winning_side = [0, 2]
             else:
