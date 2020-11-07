@@ -7,7 +7,7 @@ table is full, the bidding stage starts. For more information about bridge visit
 
 ## Requirements
 - Python
-- Pygame
+- Pygame 1.9.6
 
 ## Controls
 ### Bidding
@@ -21,4 +21,5 @@ The first card played to the trick dictates the suit that others must play (if a
 the game is over.
 
 ## Deployment
-I am planning to deploy this game on Google Cloud Virtual Server after a few tests of gameplay.
+You can connect with Google Cloud Virtual Machine. To do this, you need to download repo and run client.py.
+There have to be changed IP address in player.py and server.py for playing locally.
