@@ -408,16 +408,16 @@ class Board:
         making_slam = False
         making_grand_slam = False
         # Eventual bonus for game, slam and grand slam
-        if level_contract == 7 and score == 0:
+        if level_contract == 13 and score == 0:
             making_grand_slam = True
-        elif level_contract == 7 and score >= 0:
+        elif level_contract == 12 and score >= 0:
             making_slam = True
         if score >= 0:
-            if (self.trump == "C" or self.trump == "D") and level_contract >= 5:
+            if (self.trump == "C" or self.trump == "D") and level_contract >= 11:
                 making_game = True
-            elif (self.trump == "H" or self.trump == "S") and level_contract >= 4:
+            elif (self.trump == "H" or self.trump == "S") and level_contract >= 10:
                 making_game = True
-            elif self.trump == "N" and level_contract >= 3:
+            elif self.trump == "N" and level_contract >= 9:
                 making_game = True
             # Adding bonus points for game, slam or grand slam to the score
             if vul:
