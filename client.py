@@ -1,15 +1,18 @@
-from player import Player
-from drawing_func import *  # importing pygame as well
-from buttons import Button
+from game.player import Player
+from game.drawing_func import *  # importing pygame as well
+from game.buttons import Button
+import os
+from pathlib import Path
 
 
+base_directory = Path(__file__).parent
 pygame.init()
 
 # Images
-icon = pygame.image.load("images/icon.png")
+icon = pygame.image.load(os.path.join(base_directory, "game/images/icon.png"))
 
 # Sounds
-card_sound = pygame.mixer.Sound("sounds/card.wav")
+card_sound = pygame.mixer.Sound(os.path.join(base_directory, "game/sounds/card.wav"))
 
 # Screen settings
 screenWidth = 1200

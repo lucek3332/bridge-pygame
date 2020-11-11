@@ -1,13 +1,18 @@
 import pygame
-from buttons import SeatingButton
+from game.buttons import SeatingButton
+import os
+from pathlib import Path
+
+
+base_directory = Path(__file__).parent
 
 
 # Images of cards
 bid_font = pygame.font.SysFont("Arial", 24)
-C = pygame.image.load("images/bid/clubs.png")
-D = pygame.image.load("images/bid/diamonds.png")
-H = pygame.image.load("images/bid/hearts.png")
-S = pygame.image.load("images/bid/spades.png")
+C = pygame.image.load(os.path.join(base_directory, "images/bid/clubs.png"))
+D = pygame.image.load(os.path.join(base_directory, "images/bid/diamonds.png"))
+H = pygame.image.load(os.path.join(base_directory, "images/bid/hearts.png"))
+S = pygame.image.load(os.path.join(base_directory, "images/bid/spades.png"))
 N = bid_font.render("N", 1, (0, 0, 0), 1)
 
 

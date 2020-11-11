@@ -1,6 +1,6 @@
 import random
-from card import Card
-from bid import Bid, BidButton, BidButtonSuit, SpecialBid
+from game.card import Card
+from game.bid import Bid, BidButton, BidButtonSuit, SpecialBid
 
 
 class Board:

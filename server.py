@@ -1,7 +1,7 @@
 import socket
 import pickle
 from _thread import start_new_thread
-from table import Table
+from game.table import Table
 
 # Global constants
 # SERVER_IP = socket.gethostbyname(socket.gethostname()) - for local
