@@ -441,39 +441,39 @@ class Board:
             # Adding points for tricks and overtricks to the score
             if vul:
                 if self.trump == "C" or self.trump == "D":
-                    self.score += level_contract * 20 + score * (20 + 180 * doubled + 200 * redoubled)
+                    self.score += (level_contract - 6) * 20 + score * (20 + 180 * doubled + 380 * redoubled)
                 elif self.trump == "H" or self.trump == "S":
-                    self.score += level_contract * 30 + score * (30 + 170 * doubled + 200 * redoubled)
+                    self.score += (level_contract - 6) * 30 + score * (30 + 170 * doubled + 370 * redoubled)
                 elif self.trump == "N":
-                    self.score += 40 + (level_contract - 1) * 30 + score * (30 + 170 * doubled + 200 * redoubled)
+                    self.score += 40 + (level_contract - 7) * 30 + score * (30 + 170 * doubled + 370 * redoubled)
             else:
                 if self.trump == "C" or self.trump == "D":
-                    self.score += 100 + score * (20 + 80 * doubled + 100 * redoubled)
+                    self.score += (level_contract - 6) * 20 + score * (20 + 80 * doubled + 180 * redoubled)
                 elif self.trump == "H" or self.trump == "S":
-                    self.score += 120 + score * (30 + 70 * doubled + 100 * redoubled)
+                    self.score += (level_contract - 6) * 30 + score * (30 + 70 * doubled + 170 * redoubled)
                 elif self.trump == "N":
-                    self.score += 100 + score * (30 + 70 * doubled + 100 * redoubled)
+                    self.score += 40 + (level_contract - 7) * 30 + score * (30 + 70 * doubled + 170 * redoubled)
         # Subtracting points for 1 undertrick
         elif score == -1:
             if vul:
-                self.score -= 100 + 100 * doubled + 200 * redoubled
+                self.score -= 100 + 100 * doubled + 300 * redoubled
             else:
-                self.score -= 50 + 50 * doubled + 100 * redoubled
+                self.score -= 50 + 50 * doubled + 150 * redoubled
         # Subtracting points for 2 undertricks
         elif score == -2:
             if vul:
-                self.score -= 200 + 300 * doubled + 500 * redoubled
+                self.score -= 200 + 300 * doubled + 800 * redoubled
             else:
-                self.score -= 100 + 200 * doubled + 300 * redoubled
+                self.score -= 100 + 200 * doubled + 500 * redoubled
         # Subtracting points for 3 undertricks
         elif score == -3:
             if vul:
-                self.score -= 300 + 500 * doubled + 800 * redoubled
+                self.score -= 300 + 500 * doubled + 1300 * redoubled
             else:
-                self.score -= 150 + 350 * doubled + 500 * redoubled
+                self.score -= 150 + 350 * doubled + 850 * redoubled
         # Subtracting points for 4 undertricks or more
         else:
             if vul:
-                self.score -= 300 + 500 * doubled + 800 * redoubled + abs(score + 3) * (100 + 200 * doubled + 300 * redoubled)
+                self.score -= 300 + 500 * doubled + 1300 * redoubled + abs(score + 3) * (100 + 200 * doubled + 500 * redoubled)
             else:
-                self.score -= 150 + 350 * doubled + 500 * redoubled + abs(score + 3) * (50 + 250 * doubled + 300 * redoubled)
+                self.score -= 150 + 350 * doubled + 850 * redoubled + abs(score + 3) * (50 + 250 * doubled + 550 * redoubled)
