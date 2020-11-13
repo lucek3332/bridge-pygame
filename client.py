@@ -215,6 +215,9 @@ def mainLoop():
             table = response.get("table")
             board = response.get("board")
 
+            if not board:
+                continue
+
             # Starting playing phase
             if board.status == "play":
                 status_game = "playing"

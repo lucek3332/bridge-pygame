@@ -152,10 +152,13 @@ def handle_connection(conn, addr):
             # Dealing new board
             elif received_obj.get("command") == "shuffle":
                 t = tables.get(received_obj.get("table nr"))
-                # Shuffling once for four requests
-                if not t.board and t.queue % 4 == 0:
-                    t.next_board()
-                t.set_queue()
+                # Shuffling, when board is None
+                if not t.board:
+                    if not t.board_history:
+                        t.next_board(1)
+                    else:
+                        boardID = max(t.board_history) + 1
+                        t.next_board(boardID)
                 sending_bytes = pickle.dumps({"response": "ok",
                                               "table": t,
                                               "board": t.board})
@@ -203,8 +206,9 @@ def handle_connection(conn, addr):
                 elif received_obj.get("command") == "score":
                     t = tables.get(received_obj.get("table nr"))
                     if t:
-                        # Reset board once for four requests
-                        if t.board and t.queue % 4 == 0:
+                        # Reset board, when board is finished
+                        if t.board and t.board.status == "score":
+                            t.board_history.append(t.board.id)
                             t.board = None
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,

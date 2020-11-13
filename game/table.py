@@ -11,18 +11,8 @@ class Table:
         self.players = [None, None, None, None]  # S, W, N, E
         self.connected = [False, False, False, False]  # the same order as self.players
         self.board = None
-        self.nr_boards = 0
         self.empty = True
-        self.queue = 0
-
-    def set_queue(self):
-        """
-        Changing value of queue attribute for executing some server requests once.
-        :return: None
-        """
-        self.queue += 1
-        if self.queue > 3:
-            self.queue = 0
+        self.board_history = []
 
     def is_full(self):
         """
@@ -71,11 +61,10 @@ class Table:
     def __repr__(self):
         return f"Table nr {self.id}"
 
-    def next_board(self):
+    def next_board(self, boardID):
         """
-        Initializing new board with increased ID.
+        Initializing new board with specific ID.
         :return: None
         """
-        self.nr_boards += 1
-        self.board = Board(self.nr_boards)
+        self.board = Board(boardID)
         self.board.players = self.players

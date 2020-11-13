@@ -421,21 +421,21 @@ class Board:
                 making_game = True
             # Adding bonus points for game, slam or grand slam to the score
             if vul:
-                if making_game:
-                    self.score += 500
+                if making_grand_slam:
+                    self.score += 1500
                 elif making_slam:
                     self.score += 750
-                elif making_grand_slam:
-                    self.score += 1500
+                elif making_game:
+                    self.score += 500
                 else:
                     self.score += 50 * (doubled * 2 + redoubled * 2)
             else:
-                if making_game:
-                    self.score += 300
+                if making_grand_slam:
+                    self.score += 1000
                 elif making_slam:
                     self.score += 500
-                elif making_grand_slam:
-                    self.score += 1000
+                elif making_game:
+                    self.score += 300
                 else:
                     self.score += 50 * (doubled * 2 + redoubled * 2)
             # Adding points for tricks and overtricks to the score
