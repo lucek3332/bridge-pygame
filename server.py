@@ -210,6 +210,9 @@ def handle_connection(conn, addr):
                         if t.board and t.board.status == "score":
                             t.board_history.append(t.board.id)
                             t.board = None
+                        elif t.board and t.board.passed_out:
+                            t.board_history.append(t.board.id)
+                            t.board = None
                         sending_bytes = pickle.dumps({"response": "ok",
                                                       "table": t,
                                                       "board": t.board})

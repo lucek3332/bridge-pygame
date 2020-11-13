@@ -56,6 +56,7 @@ class Board:
         self.set_vulnerable()
         self.set_dealer()
         self.shuffle()
+        self.passed_out = False
 
     def __repr__(self):
         return f"Board nr {self.id}"
@@ -275,6 +276,7 @@ class Board:
         # Auction begins with four consecutive passes
         if all(b.bid == "pas" for b in self.bidding[:4]) and len(self.bidding) == 4:
             self.status = "play"
+            self.passed_out = True
             return True
         # Three consecutive passes following a bid, double or redouble
         elif all(b.bid == "pas" for b in self.bidding[-3:]) and len(self.bidding) > 3:
