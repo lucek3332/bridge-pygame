@@ -50,6 +50,7 @@ class Board:
         self.first_lead = True
         self.color_lead = None
         self.trick = [None, None, None, None]
+        self.trick_db = [None, None, None, None]
         self.tricks = [0, 0]
         self.score = 0
         self.result = None
@@ -313,8 +314,9 @@ class Board:
         self.first_lead = False
         # All players added card to trick, reset trick and appending tricks history
         if all(t for t in self.trick):
-            self.history.append(self.trick)
+            self.history.append(self.trick_db)
             self.trick = [None, None, None, None]
+            self.trick_db = [None, None, None, None]
         # Assignation current hand
         card = None
         if self.turn == 0:
@@ -336,6 +338,7 @@ class Board:
         card.hidden = False
         # Adding card to the trick
         self.trick[self.turn] = card
+        self.trick_db[self.turn] = card.symbol
         # Setting the suit that others must play if able to do so
         if self.lead is not None:
             self.color_lead = card_symbol[0]
@@ -364,6 +367,7 @@ class Board:
                 t.set_value(self.color_lead)
             # Who collects the trick
             self.turn = self.trick.index(max(self.trick))
+            self.trick_db[self.turn] = self.trick_db[self.turn] + "*"
             if self.turn in [0, 2]:
                 self.tricks[0] += 1
             else:
@@ -430,7 +434,7 @@ class Board:
                 elif making_game:
                     self.score += 500
                 else:
-                    self.score += 50 * (doubled * 2 + redoubled * 2)
+                    self.score += 50 + (doubled * 50 + redoubled * 150)
             else:
                 if making_grand_slam:
                     self.score += 1000
@@ -439,7 +443,7 @@ class Board:
                 elif making_game:
                     self.score += 300
                 else:
-                    self.score += 50 * (doubled * 2 + redoubled * 2)
+                    self.score += 50 + (doubled * 50 + redoubled * 150)
             # Adding points for tricks and overtricks to the score
             if vul:
                 if self.trump == "C" or self.trump == "D":
